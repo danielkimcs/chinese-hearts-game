@@ -7,6 +7,7 @@ module.exports = {
     output: {
         filename: '[name].[contenthash].js',
         path: path.join(__dirname, 'dist'),
+        publicPath: '/'
     },
     plugins: [
         new MiniCssExtractPlugin({
@@ -57,10 +58,7 @@ module.exports = {
             }
         ]
     },
-    devServer: {
-        compress: true,
-        historyApiFallback: true,
-        open: true,
-        overlay: true,
-    }
+    // devServer: {
+    //     historyApiFallback: true,
+    // }
 }
