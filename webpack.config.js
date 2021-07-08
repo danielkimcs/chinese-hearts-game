@@ -15,6 +15,7 @@ module.exports = {
         }),
         new HtmlWebpackPlugin({
             template: './client/public/index.html',
+            favicon: './client/public/favicon.ico'
         }),
     ],
     module: {
@@ -50,7 +51,7 @@ module.exports = {
                 }
             },
             {
-                test: /\.(eot|otf|ttf|woff|woff2)$/,
+                test: /\.(eot|otf|ttf|woff|woff2|ico)$/,
                 loader: require.resolve("file-loader"),
                 options: {
                     name: "static/media/[name].[hash:8].[ext]"
