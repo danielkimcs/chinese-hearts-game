@@ -1,11 +1,15 @@
-import logo from './logo.svg';
+import React, { useEffect } from 'react';
 import './App.css';
+import socketIOClient from "socket.io-client";
 
 function App() {
+  useEffect(() => {
+    const socket = socketIOClient();
+  }, []);
+
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
         <p>
           Edit <code>src/App.js</code> and save to reload.
         </p>
