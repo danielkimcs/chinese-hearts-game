@@ -6,10 +6,11 @@ class Player {
         this.socket = socket;
         this.status = Constants.PLAYER_STATUS.PLAYER_CONNECTED;
 
-        this.currentHand = [];
         this.currentTeam = "";
-        this.collectedCards = [];
         this.nextPlayer = undefined;
+        
+        this.currentHand = [];
+        this.collectedCards = [];
     }
     
     setSocket(newSocket) {

@@ -5,6 +5,10 @@ module.exports = Object.freeze({
         USERNAME_TAKEN: 'USERNAME_TAKEN',
         ROOM_FULL: 'ROOM_FULL'
     },
+    TEAM_TYPE: {
+        TEAM_A: 'TEAM_A',
+        TEAM_B: 'TEAM_B'
+    },
     CLIENT_API: {
         UPDATE_PLAYER_LIST: 'UPDATE_PLAYER_LIST',
         GAME_STARTING_COUNTDOWN: 'GAME_STARTING_COUNTDOWN',

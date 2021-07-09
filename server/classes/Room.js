@@ -9,7 +9,16 @@ class Room {
 
         this.players = {};
         // this.sockets = {};
-        this.teams = {};
+        this.teams = {
+            [Constants.TEAM_TYPE.TEAM_A]: {
+                points: 0,
+                members: []
+            },
+            [Constants.TEAM_TYPE.TEAM_B]: {
+                points: 0,
+                members: []
+            }
+        };
         this.currentTrick = undefined;
         this.currentState = Constants.ROOM_STATES.ROOM_PENDING;
 
@@ -59,6 +68,7 @@ class Room {
     }
 
     startState(newState) {
+        this.currentState = newState;
         switch (newState) {
             case Constants.ROOM_STATES.ROOM_PENDING:
                 if (this.countdownInterval) {
@@ -76,10 +86,49 @@ class Room {
                     this.startState(Constants.ROOM_STATES.ROOM_PENDING);
                     return;
                 }
-                console.log("time to decide teams!");
+                let connectedPlayers = this.getConnectedPlayers();
+                Utility.shuffleArray(connectedPlayers);
+                this.determineTeams(connectedPlayers);
+                this.determinePlayerOrder(connectedPlayers);
+
+                // TO DO: update client frontend to reflect teams and player order
                 break;
             default:
         }
+    }
+
+    determineTeams(shuffledPlayerList) {
+        if (Constants.REQUIRED_NUM_PLAYERS === 4) {
+            // Player teams: Team A - 0, 2 ; Team B - 1, 3
+            this.teams[Constants.TEAM_TYPE.TEAM_A].members = [shuffledPlayerList[0], shuffledPlayerList[2]];
+            shuffledPlayerList[0].currentTeam = shuffledPlayerList[2].currentTeam = Constants.TEAM_TYPE.TEAM_A;
+
+            this.teams[Constants.TEAM_TYPE.TEAM_B].members = [shuffledPlayerList[1], shuffledPlayerList[3]];
+            shuffledPlayerList[1].currentTeam = shuffledPlayerList[3].currentTeam = Constants.TEAM_TYPE.TEAM_B;
+        }
+    }
+
+    determinePlayerOrder(shuffledPlayerList) {
+        if (Constants.REQUIRED_NUM_PLAYERS === 4) {
+            // Player order: 0 (Team A) -> 1 (Team B) -> 2 (Team A) -> 3 (Team B)
+            for (let playerIndex = 0; playerIndex < 4; playerIndex++) {
+                shuffledPlayerList[playerIndex].nextPlayer = shuffledPlayerList[(playerIndex + 1) % 4];
+            }
+        }
+    }
+
+    getConnectedPlayers() {
+        let connectedPlayers = Array(Constants.REQUIRED_NUM_PLAYERS);
+        let index = 0;
+        for (var username in this.players) {
+            let playerObj = this.players[username];
+            if (index < Constants.REQUIRED_NUM_PLAYERS
+                && playerObj
+                && playerObj.status === Constants.PLAYER_STATUS.PLAYER_CONNECTED) {
+                connectedPlayers[index++] = playerObj;
+            }
+        }
+        return connectedPlayers;
     }
 
     beginStartingCountdown() {

@@ -115,7 +115,9 @@ io.on('connection', socket => {
             if (connectedPlayerCount === 0) {
                 delete rooms[currentPlayerRoomName];
             } else if (connectedPlayerCount < Constants.REQUIRED_NUM_PLAYERS) {
-                room.startState(Constants.ROOM_STATES.ROOM_PENDING);
+                if (room.currentState === Constants.ROOM_STATES.ROOM_COUNTDOWN) {
+                    room.startState(Constants.ROOM_STATES.ROOM_PENDING);
+                }
             }
         }
     });
