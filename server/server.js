@@ -48,19 +48,28 @@ io.on('connection', socket => {
     socket.on(Constants.ROOM_JOIN, ({ username, roomName }, callback) => {
         currentPlayerUsername = username;
         currentPlayerRoomName = roomName;
+        let currentPlayerRoom;
 
-        if (currentPlayerRoomName in rooms
-            && rooms[currentPlayerRoomName].isUsernameTaken(currentPlayerUsername)) {
-            callback({
-                success: false
-            });
-            return;
+        if (currentPlayerRoomName in rooms) {
+            currentPlayerRoom = rooms[currentPlayerRoomName];
+            if (currentPlayerRoom.isUsernameTaken(currentPlayerUsername)) {
+                callback({
+                    status: false,
+                    message: Constants.ROOM_JOIN_FAILURE_MSG_TYPE.USERNAME_TAKEN
+                });
+                return;
+            }
+            if (currentPlayerRoom.isRoomFull()) {
+                callback({
+                    status: false,
+                    message: Constants.ROOM_JOIN_FAILURE_MSG_TYPE.ROOM_FULL
+                });
+                return;
+            }
         }
 
         console.log(`Socket ${socket.id} joining ${roomName}`);
         socket.join(currentPlayerRoomName);
-
-        let currentPlayerRoom;
 
         if (currentPlayerRoomName in rooms) {
             currentPlayerRoom = rooms[currentPlayerRoomName];
@@ -80,13 +89,14 @@ io.on('connection', socket => {
             currentPlayerRoom.addPlayer(socket, currentPlayerUsername);
         }
 
-        if (currentPlayerRoom.getConnectedPlayerCount() === Constants.REQUIRED_NUM_PLAYERS) {
+        if (currentPlayerRoom.isRoomFull()) {
             currentPlayerRoom.startState(Constants.ROOM_STATES.ROOM_COUNTDOWN);
         }
 
         currentPlayerJoined = true;
         callback({
-            success: true
+            status: true,
+            message: ""
         });
     });
 

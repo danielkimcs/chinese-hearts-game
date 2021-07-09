@@ -11,20 +11,32 @@ const displayStatusValues = {
     JOIN_FAILURE: 'JOIN_FAILURE'
 }
 
+const displayMessageValues = {
+    [Constants.ROOM_JOIN_FAILURE_MSG_TYPE.USERNAME_TAKEN]: 'Someone has already taken that username in this room!',
+    [Constants.ROOM_JOIN_FAILURE_MSG_TYPE.ROOM_FULL]: 'This room is full!'
+}
+
 export const Room = ({ location }) => {
     const history = useHistory();
 
-    const [displayStatus, setDisplayStatus] = useState(displayStatusValues.LOADING);
+    const [displayStatus, setDisplayStatus] = useState({
+        status: displayStatusValues.LOADING,
+        message: ""
+    });
     const [players, setPlayers] = useState([]);
     const [startingCountdown, setStartingCountdown] = useState(null);
     let { roomName } = useParams();
 
     useEffect(() => {
         if (location.state) {
-            initiateSocket({ username: location.state.username, roomName: roomName }, (success) => {
-                setDisplayStatus(success ?
-                    displayStatusValues.JOIN_SUCCESS :
-                    displayStatusValues.JOIN_FAILURE);
+            initiateSocket({ username: location.state.username, roomName: roomName }, (response) => {
+                console.log(response);
+                setDisplayStatus({
+                    status: response.status ?
+                        displayStatusValues.JOIN_SUCCESS :
+                        displayStatusValues.JOIN_FAILURE,
+                    message: response.message
+                });
             });
 
             subscribeUpdatePlayers((err, playerObjects) => {
@@ -49,7 +61,7 @@ export const Room = ({ location }) => {
 
     return (
         <div className="room-container">
-            {displayStatus === displayStatusValues.JOIN_SUCCESS ? <>
+            {displayStatus.status === displayStatusValues.JOIN_SUCCESS ? <>
                 <div>Room Name: {roomName}</div>
                 <div>Username: {location.state.username}</div>
 
@@ -71,8 +83,8 @@ export const Room = ({ location }) => {
                 <div>
                     {startingCountdown ? startingCountdown : null}
                 </div>
-            </> : (displayStatus === displayStatusValues.JOIN_FAILURE ? <>
-                <p>Someone has already taken that username in this room! <button onClick={() => history.push("/")}>Go back home</button></p>
+            </> : (displayStatus.status === displayStatusValues.JOIN_FAILURE ? <>
+                <p>{displayMessageValues[displayStatus.message]} <button onClick={() => history.push("/")}>Go back home</button></p>
             </> : <p>Loading...</p>)}
         </div>
     );

@@ -72,7 +72,7 @@ class Room {
                 this.countdownInterval = this.beginStartingCountdown();
                 break;
             case Constants.ROOM_STATES.ROOM_SETUP:
-                if (this.getConnectedPlayerCount() < Constants.REQUIRED_NUM_PLAYERS) {
+                if (!this.isRoomFull()) {
                     this.startState(Constants.ROOM_STATES.ROOM_PENDING);
                     return;
                 }
@@ -109,7 +109,9 @@ class Room {
             && this.players[username]["status"] === Constants.PLAYER_STATUS.PLAYER_CONNECTED;
     }
 
-
+    isRoomFull() {
+        return this.getConnectedPlayerCount() === Constants.REQUIRED_NUM_PLAYERS;
+    }
 }
 
 class ClientAPI {

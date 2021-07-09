@@ -7,7 +7,7 @@ export const initiateSocket = ({ username, roomName }, callback) => {
     socket = io();
     if (socket && roomName) {
         socket.emit(Constants.ROOM_JOIN, { username, roomName }, (response) => {
-            callback(response.success);
+            callback(response);
         });
     } else {
         callback(false);
