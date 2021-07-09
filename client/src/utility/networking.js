@@ -19,6 +19,14 @@ export const subscribeUpdatePlayers = (callback) => {
     });
 }
 
+export const subscribeStartingCountdown = (callback) => {
+    if (!socket) return (true);
+
+    socket.on(Constants.GAME_STARTING_COUNTDOWN, counter => {
+        return callback(null, counter);
+    });
+}
+
 // export const sendMessage = (room, message) => {
 //     if (socket) socket.emit('chat', { message, room });
 // }

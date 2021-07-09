@@ -46,28 +46,36 @@ io.on('connection', socket => {
 
     socket.on(Constants.ROOM_JOIN, ({ username, roomName }) => {
         console.log(`Socket ${socket.id} joining ${roomName}`);
-        
+
         currentPlayerUsername = username;
         currentPlayerRoomName = roomName;
+        let currentPlayerRoom;
 
         socket.join(currentPlayerRoomName);
+
         if (currentPlayerRoomName in rooms) {
-            if (currentPlayerUsername in rooms[currentPlayerRoomName].players) {
+            currentPlayerRoom = rooms[currentPlayerRoomName];
+            if (currentPlayerUsername in currentPlayerRoom.players) {
                 // same username but different socket
-                rooms[currentPlayerRoomName].reconnectPlayer(socket, currentPlayerUsername);
+                currentPlayerRoom.reconnectPlayer(socket, currentPlayerUsername);
 
                 // TO DO: update user's screen on latest updates to current game
             } else {
                 // a new player
-                rooms[currentPlayerRoomName].addPlayer(socket, currentPlayerUsername);
+                currentPlayerRoom.addPlayer(socket, currentPlayerUsername);
             }
         }
         else {
             rooms[currentPlayerRoomName] = new Room(io, currentPlayerRoomName);
-            rooms[currentPlayerRoomName].addPlayer(socket, currentPlayerUsername);
+            currentPlayerRoom = rooms[currentPlayerRoomName];
+            currentPlayerRoom.addPlayer(socket, currentPlayerUsername);
         }
 
-        rooms[currentPlayerRoomName].ClientAPI.updatePlayerList();
+        currentPlayerRoom.ClientAPI.updatePlayerList();
+        console.log(currentPlayerRoom.getConnectedPlayerCount());
+        if (currentPlayerRoom.getConnectedPlayerCount() === 4) {
+            beginStartingCountdown();
+        }
     });
 
     socket.on('disconnect', () => {
@@ -84,6 +92,18 @@ io.on('connection', socket => {
                 delete rooms[currentPlayerRoomName];
             }
         }
-
     });
+
+    function beginStartingCountdown() {
+        if (!currentPlayerRoomName) return;
+        let countdown = 5;
+        let startingCountdown = setInterval(function () {
+            if (countdown === 0) {
+                io.in(currentPlayerRoomName).emit(Constants.GAME_STARTING_COUNTDOWN, null);
+                clearInterval(startingCountdown);
+            }
+            io.in(currentPlayerRoomName).emit(Constants.GAME_STARTING_COUNTDOWN, countdown);
+            countdown--;
+        }, 1000);
+    }
 });

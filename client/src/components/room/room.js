@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { initiateSocket, disconnectSocket, subscribeUpdatePlayers } from '../../utility/networking';
+import { initiateSocket, disconnectSocket, subscribeUpdatePlayers, subscribeStartingCountdown } from '../../utility/networking';
 import { useParams, Redirect } from "react-router-dom";
 
 const Constants = require('../../../../shared/constants');
 
 export const Room = ({ location }) => {
     const [players, setPlayers] = useState([]);
+    const [startingCountdown, setStartingCountdown] = useState(null);
     let { roomName } = useParams();
 
     useEffect(() => {
@@ -15,6 +16,11 @@ export const Room = ({ location }) => {
             subscribeUpdatePlayers((err, playerObjects) => {
                 if (err) return;
                 setPlayers(playerObjects);
+            });
+
+            subscribeStartingCountdown((err, counter) => {
+                if (err) return;
+                setStartingCountdown(counter);
             });
 
             return () => {
@@ -45,6 +51,10 @@ export const Room = ({ location }) => {
                         </li>)
                     }
                 </ul>
+            </div>
+
+            <div>
+                {startingCountdown ? startingCountdown : null}
             </div>
         </div>
     );

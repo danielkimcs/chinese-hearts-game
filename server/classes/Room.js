@@ -36,8 +36,9 @@ class Room {
 
     getConnectedPlayerCount() {
         let count = 0;
-        for (let [username, playerObj] in this.players) {
-            if (playerObj.status === Constants.PLAYER_STATUS.PLAYER_CONNECTED) count++;
+        for (var username in this.players) {
+            let playerObj = this.players[username];
+            if (playerObj && playerObj.status === Constants.PLAYER_STATUS.PLAYER_CONNECTED) count++;
         }
         return count;
     }
@@ -64,7 +65,6 @@ class ClientAPI {
                 status: playerObj.status
             }
         });
-        console.log(playerObjects);
         this.room.io.to(this.room.roomName).emit(Constants.CLIENT_API.UPDATE_PLAYER_LIST, playerObjects);
     }
 }
