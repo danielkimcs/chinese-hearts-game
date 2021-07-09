@@ -4,7 +4,7 @@ class Player {
     constructor(socket, username) {
         this.username = username;
         this.socket = socket;
-        this.status = "connected";
+        this.status = Constants.PLAYER_STATUS.PLAYER_CONNECTED;
 
         this.currentHand = [];
         this.currentTeam = "";
@@ -12,7 +12,9 @@ class Player {
         this.nextPlayer = undefined;
     }
     
-
+    setSocket(newSocket) {
+        this.socket = newSocket;
+    }
 }
 
 module.exports = Player;

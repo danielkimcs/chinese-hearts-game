@@ -14,8 +14,8 @@ export const disconnectSocket = () => {
 export const subscribeUpdatePlayers = (callback) => {
     if (!socket) return (true);
 
-    socket.on(Constants.CLIENT_API.UPDATE_PLAYER_LIST, msg => {
-        return callback(null, msg);
+    socket.on(Constants.CLIENT_API.UPDATE_PLAYER_LIST, playerObjects => {
+        return callback(null, playerObjects);
     });
 }
 

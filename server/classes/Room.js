@@ -1,3 +1,4 @@
+const Utility = require('../../shared/utility');
 const Constants = require('../../shared/constants');
 const Player = require('./Player');
 
@@ -7,7 +8,7 @@ class Room {
         this.roomName = roomName;
 
         this.players = {};
-        this.sockets = {};
+        // this.sockets = {};
         this.teams = {};
         this.currentTrick = undefined;
         this.currentState = Constants.ROOM_STATES.ROOM_PENDING;
@@ -16,23 +17,35 @@ class Room {
     }
 
     addPlayer(socket, username) {
-        this.sockets[socket.id] = socket;
-        this.players[socket.id] = new Player(socket, username);
+        // this.sockets[socket.id] = socket;
+        this.players[username] = new Player(socket, username);
     }
 
-    removePlayer(socket) {
-        delete this.sockets[socket.id];
-        delete this.players[socket.id];
+    reconnectPlayer(newSocket, username) {
+        if (!(username in this.players)) return;
+        this.players[username].setSocket(newSocket);
+        this.players[username].status = Constants.PLAYER_STATUS.PLAYER_CONNECTED;
     }
 
-    getPlayerCount() {
-        return Object.keys(this.players).length;
+    disconnectPlayer(username) {
+        // delete this.sockets[socket.id];
+        if (!(username in this.players)) return;
+        this.players[username].status = Constants.PLAYER_STATUS.PLAYER_DISCONNECTED;
+        this.players[username].socket = null;
+    }
+
+    getConnectedPlayerCount() {
+        let count = 0;
+        for (let [username, playerObj] in this.players) {
+            if (playerObj.status === Constants.PLAYER_STATUS.PLAYER_CONNECTED) count++;
+        }
+        return count;
     }
 
     startState(newState) {
         switch (newState) {
             case Constants.ROOM_STATES.ROOM_SETUP:
-                
+
                 break;
             default:
         }
@@ -45,8 +58,14 @@ class ClientAPI {
     }
 
     updatePlayerList() {
-        let playerNames = Object.values(this.room.players).map(playerObj => playerObj.username);
-        this.room.io.to(this.room.roomName).emit(Constants.CLIENT_API.UPDATE_PLAYER_LIST, playerNames);
+        let playerObjects = Object.values(this.room.players).map(playerObj => {
+            return {
+                username: playerObj.username,
+                status: playerObj.status
+            }
+        });
+        console.log(playerObjects);
+        this.room.io.to(this.room.roomName).emit(Constants.CLIENT_API.UPDATE_PLAYER_LIST, playerObjects);
     }
 }
 

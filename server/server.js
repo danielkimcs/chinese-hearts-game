@@ -46,12 +46,21 @@ io.on('connection', socket => {
 
     socket.on(Constants.ROOM_JOIN, ({ username, roomName }) => {
         console.log(`Socket ${socket.id} joining ${roomName}`);
+        
         currentPlayerUsername = username;
         currentPlayerRoomName = roomName;
 
         socket.join(currentPlayerRoomName);
         if (currentPlayerRoomName in rooms) {
-            rooms[currentPlayerRoomName].addPlayer(socket, currentPlayerUsername);
+            if (currentPlayerUsername in rooms[currentPlayerRoomName].players) {
+                // same username but different socket
+                rooms[currentPlayerRoomName].reconnectPlayer(socket, currentPlayerUsername);
+
+                // TO DO: update user's screen on latest updates to current game
+            } else {
+                // a new player
+                rooms[currentPlayerRoomName].addPlayer(socket, currentPlayerUsername);
+            }
         }
         else {
             rooms[currentPlayerRoomName] = new Room(io, currentPlayerRoomName);
@@ -66,13 +75,13 @@ io.on('connection', socket => {
         if (socket.id in clients) {
             delete clients[socket.id];
         }
-        if (currentPlayerRoomName in rooms) {
+        if (currentPlayerUsername && currentPlayerRoomName in rooms) {
             let room = rooms[currentPlayerRoomName];
-            room.removePlayer(socket);
-            if (room.getPlayerCount() == 0) {
+            room.disconnectPlayer(currentPlayerUsername);
+            room.ClientAPI.updatePlayerList();
+
+            if (room.getConnectedPlayerCount() == 0) {
                 delete rooms[currentPlayerRoomName];
-            } else {
-                room.ClientAPI.updatePlayerList();
             }
         }
 

@@ -3,6 +3,10 @@ module.exports = Object.freeze({
     CLIENT_API: {
         UPDATE_PLAYER_LIST: 'UPDATE_PLAYER_LIST',
     },
+    PLAYER_STATUS: {
+        PLAYER_CONNECTED: 'PLAYER_CONNECTED',
+        PLAYER_DISCONNECTED: 'PLAYER_DISCONNECTED',
+    },
     ROOM_STATES: {
         ROOM_PENDING: 'ROOM_PENDING',
         ROOM_SETUP: 'ROOM_SETUP',
