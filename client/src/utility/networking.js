@@ -1,9 +1,11 @@
 import io from 'socket.io-client';
+const Constants = require('../../../shared/constants');
+
 let socket;
 
 export const initiateSocket = ({username, roomName}) => {
     socket = io();
-    if (socket && roomName) socket.emit('join', {username, roomName});
+    if (socket && roomName) socket.emit(Constants.ROOM_JOIN, {username, roomName});
 }
 export const disconnectSocket = () => {
     if (socket) socket.disconnect();
@@ -12,7 +14,7 @@ export const disconnectSocket = () => {
 export const subscribeUpdatePlayers = (callback) => {
     if (!socket) return (true);
 
-    socket.on('players', msg => {
+    socket.on(Constants.CLIENT_API.UPDATE_PLAYER_LIST, msg => {
         return callback(null, msg);
     });
 }

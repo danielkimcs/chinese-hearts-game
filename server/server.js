@@ -7,7 +7,8 @@ const webpack = require('webpack');
 const webpackDevMiddleware = require('webpack-dev-middleware');
 const webpackConfig = require('../webpack.dev.js');
 
-const Room = require('./Room');
+const Room = require('./classes/Room');
+const Constants = require('../shared/constants');
 
 // Setup an Express server
 const app = express();
@@ -35,10 +36,6 @@ const io = socketio(server);
 let clients = {};
 let rooms = {};
 
-const isObjEmpty = (obj) => {
-    return Object.keys(obj).length === 0 && obj.constructor === Object;
-}
-
 io.on('connection', socket => {
     console.log('Player connected ', socket.id);
 
@@ -47,7 +44,7 @@ io.on('connection', socket => {
     let currentPlayerUsername = undefined;
     let currentPlayerRoomName = undefined;
 
-    socket.on('join', ({ username, roomName }) => {
+    socket.on(Constants.ROOM_JOIN, ({ username, roomName }) => {
         console.log(`Socket ${socket.id} joining ${roomName}`);
         currentPlayerUsername = username;
         currentPlayerRoomName = roomName;
@@ -61,21 +58,21 @@ io.on('connection', socket => {
             rooms[currentPlayerRoomName].addPlayer(socket, currentPlayerUsername);
         }
 
-        rooms[currentPlayerRoomName].ClientAPI.updatePlayers();
+        rooms[currentPlayerRoomName].ClientAPI.updatePlayerList();
     });
 
     socket.on('disconnect', () => {
         console.log(socket.id, " disconnected");
-
         if (socket.id in clients) {
             delete clients[socket.id];
         }
         if (currentPlayerRoomName in rooms) {
             let room = rooms[currentPlayerRoomName];
             room.removePlayer(socket);
-            room.ClientAPI.updatePlayers();
-            if (isObjEmpty(room.players)) {
+            if (room.getPlayerCount() == 0) {
                 delete rooms[currentPlayerRoomName];
+            } else {
+                room.ClientAPI.updatePlayerList();
             }
         }
 

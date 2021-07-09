@@ -1,4 +1,8 @@
 module.exports = Object.freeze({
+    ROOM_JOIN: 'ROOM_JOIN',
+    CLIENT_API: {
+        UPDATE_PLAYER_LIST: 'UPDATE_PLAYER_LIST',
+    },
     ROOM_STATES: {
         ROOM_PENDING: 'ROOM_PENDING',
         ROOM_SETUP: 'ROOM_SETUP',

@@ -1,4 +1,5 @@
-const Constants = require('../shared/constants');
+const Constants = require('../../shared/constants');
+const Player = require('./Player');
 
 class Room {
     constructor(io, roomName) {
@@ -14,11 +15,9 @@ class Room {
         this.ClientAPI = new ClientAPI(this);
     }
 
-
-
     addPlayer(socket, username) {
         this.sockets[socket.id] = socket;
-        this.players[socket.id] = username;
+        this.players[socket.id] = new Player(socket, username);
     }
 
     removePlayer(socket) {
@@ -26,8 +25,17 @@ class Room {
         delete this.players[socket.id];
     }
 
-    printPlayers() {
-        console.log(this.players);
+    getPlayerCount() {
+        return Object.keys(this.players).length;
+    }
+
+    startState(newState) {
+        switch (newState) {
+            case Constants.ROOM_STATES.ROOM_SETUP:
+                
+                break;
+            default:
+        }
     }
 }
 
@@ -36,8 +44,9 @@ class ClientAPI {
         this.room = parent;
     }
 
-    updatePlayers() {
-        this.room.io.to(this.room.roomName).emit("players", Object.values(this.room.players));
+    updatePlayerList() {
+        let playerNames = Object.values(this.room.players).map(playerObj => playerObj.username);
+        this.room.io.to(this.room.roomName).emit(Constants.CLIENT_API.UPDATE_PLAYER_LIST, playerNames);
     }
 }
 
