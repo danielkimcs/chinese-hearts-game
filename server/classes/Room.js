@@ -65,6 +65,7 @@ class Room {
     }
 
     beginStartingCountdown() {
+        let currentRoom = this;
         let clientAPI = this.ClientAPI;
 
         let countdown = 5;
@@ -73,13 +74,20 @@ class Room {
             if (countdown === 0) {
                 clientAPI.updateCountdown(null);
                 clearInterval(startingCountdown);
-                this.countdownInterval = undefined;
+                currentRoom.countdownInterval = undefined;
             }
             clientAPI.updateCountdown(countdown);
             countdown--;
         }, 1000);
 
         return startingCountdown;
+    }
+
+    isUsernameTaken(username) {
+        return this.players
+            && this.players.hasOwnProperty(username)
+            && this.players[username]
+            && this.players[username]["status"] === Constants.PLAYER_STATUS.PLAYER_CONNECTED;
     }
 }
 

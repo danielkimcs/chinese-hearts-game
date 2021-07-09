@@ -3,10 +3,17 @@ const Constants = require('../../../shared/constants');
 
 let socket;
 
-export const initiateSocket = ({username, roomName}) => {
+export const initiateSocket = ({ username, roomName }, callback) => {
     socket = io();
-    if (socket && roomName) socket.emit(Constants.ROOM_JOIN, {username, roomName});
+    if (socket && roomName) {
+        socket.emit(Constants.ROOM_JOIN, { username, roomName }, (response) => {
+            callback(response.success);
+        });
+    } else {
+        callback(false);
+    }
 }
+
 export const disconnectSocket = () => {
     if (socket) socket.disconnect();
 }
@@ -21,7 +28,7 @@ export const subscribeUpdatePlayers = (callback) => {
 
 export const subscribeStartingCountdown = (callback) => {
     if (!socket) return (true);
-    
+
     socket.on(Constants.CLIENT_API.GAME_STARTING_COUNTDOWN, counter => {
         return callback(null, counter);
     });

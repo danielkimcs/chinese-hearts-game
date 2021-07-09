@@ -44,15 +44,24 @@ io.on('connection', socket => {
 
     let currentPlayerUsername = undefined;
     let currentPlayerRoomName = undefined;
+    let currentPlayerJoined = false;
 
-    socket.on(Constants.ROOM_JOIN, ({ username, roomName }) => {
-        console.log(`Socket ${socket.id} joining ${roomName}`);
-
+    socket.on(Constants.ROOM_JOIN, ({ username, roomName }, callback) => {
         currentPlayerUsername = username;
         currentPlayerRoomName = roomName;
-        let currentPlayerRoom;
 
+        if (currentPlayerRoomName in rooms
+            && rooms[currentPlayerRoomName].isUsernameTaken(currentPlayerUsername)) {
+            callback({
+                success: false
+            });
+            return;
+        }
+
+        console.log(`Socket ${socket.id} joining ${roomName}`);
         socket.join(currentPlayerRoomName);
+
+        let currentPlayerRoom;
 
         if (currentPlayerRoomName in rooms) {
             currentPlayerRoom = rooms[currentPlayerRoomName];
@@ -73,14 +82,20 @@ io.on('connection', socket => {
         }
 
         currentPlayerRoom.ClientAPI.updatePlayerList();
-        console.log(currentPlayerRoom.getConnectedPlayerCount());
         if (currentPlayerRoom.getConnectedPlayerCount() === REQUIRED_NUM_PLAYERS) {
             currentPlayerRoom.startState(Constants.ROOM_STATES.ROOM_COUNTDOWN);
         }
+
+        currentPlayerJoined = true;
+        callback({
+            success: true
+        });
     });
 
     socket.on('disconnect', () => {
         console.log(socket.id, " disconnected");
+        if (!currentPlayerJoined) return;
+        
         if (socket.id in clients) {
             delete clients[socket.id];
         }
