@@ -13,6 +13,8 @@ class Room {
         this.currentTrick = undefined;
         this.currentState = Constants.ROOM_STATES.ROOM_PENDING;
 
+        this.countdownInterval = undefined;
+
         this.ClientAPI = new ClientAPI(this);
     }
 
@@ -45,11 +47,39 @@ class Room {
 
     startState(newState) {
         switch (newState) {
+            case Constants.ROOM_STATES.ROOM_PENDING:
+                if (this.countdownInterval) {
+                    clearInterval(this.countdownInterval);
+                    this.countdownInterval = undefined;
+                    this.ClientAPI.updateCountdown(null);
+                }
+                break;
+            case Constants.ROOM_STATES.ROOM_COUNTDOWN:
+                this.countdownInterval = this.beginStartingCountdown();
+                break;
             case Constants.ROOM_STATES.ROOM_SETUP:
 
                 break;
             default:
         }
+    }
+
+    beginStartingCountdown() {
+        let clientAPI = this.ClientAPI;
+
+        let countdown = 5;
+        let startingCountdown = setInterval(function () {
+            // Be careful: 'this' does not refer to Room obj inside the interval
+            if (countdown === 0) {
+                clientAPI.updateCountdown(null);
+                clearInterval(startingCountdown);
+                this.countdownInterval = undefined;
+            }
+            clientAPI.updateCountdown(countdown);
+            countdown--;
+        }, 1000);
+
+        return startingCountdown;
     }
 }
 
@@ -66,6 +96,10 @@ class ClientAPI {
             }
         });
         this.room.io.to(this.room.roomName).emit(Constants.CLIENT_API.UPDATE_PLAYER_LIST, playerObjects);
+    }
+
+    updateCountdown(countdown) {
+        this.room.io.in(this.room.roomName).emit(Constants.CLIENT_API.GAME_STARTING_COUNTDOWN, countdown);
     }
 }
 

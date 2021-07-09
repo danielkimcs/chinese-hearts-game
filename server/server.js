@@ -33,6 +33,7 @@ console.log(`Server listening on port ${port}`);
 // Setup socket.io
 const io = socketio(server);
 
+const REQUIRED_NUM_PLAYERS = 4;
 let clients = {};
 let rooms = {};
 
@@ -73,8 +74,8 @@ io.on('connection', socket => {
 
         currentPlayerRoom.ClientAPI.updatePlayerList();
         console.log(currentPlayerRoom.getConnectedPlayerCount());
-        if (currentPlayerRoom.getConnectedPlayerCount() === 4) {
-            beginStartingCountdown();
+        if (currentPlayerRoom.getConnectedPlayerCount() === REQUIRED_NUM_PLAYERS) {
+            currentPlayerRoom.startState(Constants.ROOM_STATES.ROOM_COUNTDOWN);
         }
     });
 
@@ -88,22 +89,12 @@ io.on('connection', socket => {
             room.disconnectPlayer(currentPlayerUsername);
             room.ClientAPI.updatePlayerList();
 
-            if (room.getConnectedPlayerCount() == 0) {
+            let connectedPlayerCount = room.getConnectedPlayerCount();
+            if (connectedPlayerCount === 0) {
                 delete rooms[currentPlayerRoomName];
+            } else if (connectedPlayerCount < REQUIRED_NUM_PLAYERS) {
+                room.startState(Constants.ROOM_STATES.ROOM_PENDING);
             }
         }
     });
-
-    function beginStartingCountdown() {
-        if (!currentPlayerRoomName) return;
-        let countdown = 5;
-        let startingCountdown = setInterval(function () {
-            if (countdown === 0) {
-                io.in(currentPlayerRoomName).emit(Constants.GAME_STARTING_COUNTDOWN, null);
-                clearInterval(startingCountdown);
-            }
-            io.in(currentPlayerRoomName).emit(Constants.GAME_STARTING_COUNTDOWN, countdown);
-            countdown--;
-        }, 1000);
-    }
 });

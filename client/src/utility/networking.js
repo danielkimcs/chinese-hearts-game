@@ -21,8 +21,8 @@ export const subscribeUpdatePlayers = (callback) => {
 
 export const subscribeStartingCountdown = (callback) => {
     if (!socket) return (true);
-
-    socket.on(Constants.GAME_STARTING_COUNTDOWN, counter => {
+    
+    socket.on(Constants.CLIENT_API.GAME_STARTING_COUNTDOWN, counter => {
         return callback(null, counter);
     });
 }
