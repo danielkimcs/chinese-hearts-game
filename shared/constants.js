@@ -1,4 +1,5 @@
 module.exports = Object.freeze({
+    REQUIRED_NUM_PLAYERS: 4,
     ROOM_JOIN: 'ROOM_JOIN',
     CLIENT_API: {
         UPDATE_PLAYER_LIST: 'UPDATE_PLAYER_LIST',

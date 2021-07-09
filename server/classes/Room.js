@@ -21,12 +21,14 @@ class Room {
     addPlayer(socket, username) {
         // this.sockets[socket.id] = socket;
         this.players[username] = new Player(socket, username);
+        this.ClientAPI.updatePlayerList();
     }
 
     reconnectPlayer(newSocket, username) {
         if (!(username in this.players)) return;
         this.players[username].setSocket(newSocket);
         this.players[username].status = Constants.PLAYER_STATUS.PLAYER_CONNECTED;
+        this.ClientAPI.updatePlayerList();
     }
 
     disconnectPlayer(username) {
@@ -34,6 +36,17 @@ class Room {
         if (!(username in this.players)) return;
         this.players[username].status = Constants.PLAYER_STATUS.PLAYER_DISCONNECTED;
         this.players[username].socket = null;
+        this.ClientAPI.updatePlayerList();
+    }
+
+    removeDisconnectedPlayers() {
+        for (var username in this.players) {
+            let playerObj = this.players[username];
+            if (playerObj && playerObj.status === Constants.PLAYER_STATUS.PLAYER_DISCONNECTED) {
+                delete this.players[username];
+            }
+        }
+        this.ClientAPI.updatePlayerList();
     }
 
     getConnectedPlayerCount() {
@@ -55,10 +68,15 @@ class Room {
                 }
                 break;
             case Constants.ROOM_STATES.ROOM_COUNTDOWN:
+                this.removeDisconnectedPlayers();
                 this.countdownInterval = this.beginStartingCountdown();
                 break;
             case Constants.ROOM_STATES.ROOM_SETUP:
-
+                if (this.getConnectedPlayerCount() < Constants.REQUIRED_NUM_PLAYERS) {
+                    this.startState(Constants.ROOM_STATES.ROOM_PENDING);
+                    return;
+                }
+                console.log("time to decide teams!");
                 break;
             default:
         }
@@ -66,15 +84,16 @@ class Room {
 
     beginStartingCountdown() {
         let currentRoom = this;
-        let clientAPI = this.ClientAPI;
+        let clientAPI = currentRoom.ClientAPI;
 
         let countdown = 5;
         let startingCountdown = setInterval(function () {
             // Be careful: 'this' does not refer to Room obj inside the interval
             if (countdown === 0) {
                 clientAPI.updateCountdown(null);
-                clearInterval(startingCountdown);
                 currentRoom.countdownInterval = undefined;
+                clearInterval(startingCountdown);
+                currentRoom.startState(Constants.ROOM_STATES.ROOM_SETUP);
             }
             clientAPI.updateCountdown(countdown);
             countdown--;
@@ -89,6 +108,8 @@ class Room {
             && this.players[username]
             && this.players[username]["status"] === Constants.PLAYER_STATUS.PLAYER_CONNECTED;
     }
+
+
 }
 
 class ClientAPI {

@@ -33,7 +33,6 @@ console.log(`Server listening on port ${port}`);
 // Setup socket.io
 const io = socketio(server);
 
-const REQUIRED_NUM_PLAYERS = 4;
 let clients = {};
 let rooms = {};
 
@@ -81,8 +80,7 @@ io.on('connection', socket => {
             currentPlayerRoom.addPlayer(socket, currentPlayerUsername);
         }
 
-        currentPlayerRoom.ClientAPI.updatePlayerList();
-        if (currentPlayerRoom.getConnectedPlayerCount() === REQUIRED_NUM_PLAYERS) {
+        if (currentPlayerRoom.getConnectedPlayerCount() === Constants.REQUIRED_NUM_PLAYERS) {
             currentPlayerRoom.startState(Constants.ROOM_STATES.ROOM_COUNTDOWN);
         }
 
@@ -95,19 +93,18 @@ io.on('connection', socket => {
     socket.on('disconnect', () => {
         console.log(socket.id, " disconnected");
         if (!currentPlayerJoined) return;
-        
+
         if (socket.id in clients) {
             delete clients[socket.id];
         }
         if (currentPlayerUsername && currentPlayerRoomName in rooms) {
             let room = rooms[currentPlayerRoomName];
             room.disconnectPlayer(currentPlayerUsername);
-            room.ClientAPI.updatePlayerList();
 
             let connectedPlayerCount = room.getConnectedPlayerCount();
             if (connectedPlayerCount === 0) {
                 delete rooms[currentPlayerRoomName];
-            } else if (connectedPlayerCount < REQUIRED_NUM_PLAYERS) {
+            } else if (connectedPlayerCount < Constants.REQUIRED_NUM_PLAYERS) {
                 room.startState(Constants.ROOM_STATES.ROOM_PENDING);
             }
         }
