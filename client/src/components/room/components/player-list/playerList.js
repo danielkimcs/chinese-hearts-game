@@ -10,7 +10,8 @@ export const PlayerList = ({ players }) => {
         if (teamPlayers.length !== Constants.REQUIRED_NUM_PLAYERS) {
             return players;
         }
-        else { // Sort into player order
+        else { // Players are now divided in teams so display in proper playing order
+            // TO DO: styling clockwise order in perspective of current player
             let usernameToPlayerObj = {};
             teamPlayers.forEach(playerObj => usernameToPlayerObj[playerObj.username] = playerObj);
 

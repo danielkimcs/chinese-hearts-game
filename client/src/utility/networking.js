@@ -34,6 +34,14 @@ export const subscribeStartingCountdown = (callback) => {
     });
 }
 
+export const subscribePause = (callback) => {
+    if (!socket) return (true);
+
+    socket.on(Constants.CLIENT_API.GAME_PAUSE, paused => {
+        return callback(null, paused);
+    });
+}
+
 // export const sendMessage = (room, message) => {
 //     if (socket) socket.emit('chat', { message, room });
 // }

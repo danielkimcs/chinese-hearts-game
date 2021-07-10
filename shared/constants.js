@@ -3,7 +3,8 @@ module.exports = Object.freeze({
     ROOM_JOIN: 'ROOM_JOIN',
     ROOM_JOIN_FAILURE_MSG_TYPE: {
         USERNAME_TAKEN: 'USERNAME_TAKEN',
-        ROOM_FULL: 'ROOM_FULL'
+        ROOM_FULL: 'ROOM_FULL',
+        ROOM_IN_PROGRESS: 'ROOM_IN_PROGRESS',
     },
     TEAM_TYPE: {
         TEAM_A: 'TEAM_A',
@@ -12,6 +13,7 @@ module.exports = Object.freeze({
     CLIENT_API: {
         UPDATE_PLAYER_LIST: 'UPDATE_PLAYER_LIST',
         GAME_STARTING_COUNTDOWN: 'GAME_STARTING_COUNTDOWN',
+        GAME_PAUSE: 'GAME_PAUSE',
     },
     PLAYER_STATUS: {
         PLAYER_CONNECTED: 'PLAYER_CONNECTED',

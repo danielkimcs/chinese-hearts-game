@@ -21,10 +21,52 @@ class Room {
         };
         this.currentTrick = undefined;
         this.currentState = Constants.ROOM_STATES.ROOM_PENDING;
+        this.gamePaused = false;
 
         this.countdownInterval = undefined;
 
         this.ClientAPI = new ClientAPI(this);
+    }
+
+    startState(newState) {
+        console.log(newState);
+        if (newState !== Constants.ROOM_STATES.ROOM_PAUSE) {
+            this.currentState = newState;
+        }
+
+        switch (newState) {
+            case Constants.ROOM_STATES.ROOM_PAUSE:
+                this.togglePause(true);
+                break;
+            case Constants.ROOM_STATES.ROOM_PENDING:
+                if (this.countdownInterval) {
+                    clearInterval(this.countdownInterval);
+                    this.countdownInterval = undefined;
+                    this.ClientAPI.updateCountdown(null);
+                }
+                break;
+            case Constants.ROOM_STATES.ROOM_COUNTDOWN:
+                this.removeDisconnectedPlayers();
+                this.countdownInterval = this.beginStartingCountdown();
+                break;
+            case Constants.ROOM_STATES.ROOM_SETUP:
+                if (!this.isRoomFull()) {
+                    this.startState(Constants.ROOM_STATES.ROOM_PENDING);
+                    return;
+                }
+                let connectedPlayers = this.getConnectedPlayers();
+                Utility.shuffleArray(connectedPlayers);
+                this.determineTeams(connectedPlayers);
+                this.determinePlayerOrder(connectedPlayers);
+
+                this.ClientAPI.updatePlayerList();
+                this.startState(Constants.ROOM_STATES.ROUND_DEAL);
+                break;
+            case Constants.ROOM_STATES.ROUND_DEAL:
+
+                break;
+            default:
+        }
     }
 
     addPlayer(socket, username) {
@@ -81,37 +123,6 @@ class Room {
         return connectedPlayers;
     }
 
-    startState(newState) {
-        this.currentState = newState;
-        switch (newState) {
-            case Constants.ROOM_STATES.ROOM_PENDING:
-                if (this.countdownInterval) {
-                    clearInterval(this.countdownInterval);
-                    this.countdownInterval = undefined;
-                    this.ClientAPI.updateCountdown(null);
-                }
-                break;
-            case Constants.ROOM_STATES.ROOM_COUNTDOWN:
-                this.removeDisconnectedPlayers();
-                this.countdownInterval = this.beginStartingCountdown();
-                break;
-            case Constants.ROOM_STATES.ROOM_SETUP:
-                if (!this.isRoomFull()) {
-                    this.startState(Constants.ROOM_STATES.ROOM_PENDING);
-                    return;
-                }
-                let connectedPlayers = this.getConnectedPlayers();
-                Utility.shuffleArray(connectedPlayers);
-                this.determineTeams(connectedPlayers);
-                this.determinePlayerOrder(connectedPlayers);
-
-                // TO DO: update client frontend to reflect teams and player order
-                this.ClientAPI.updatePlayerList();
-                break;
-            default:
-        }
-    }
-
     determineTeams(shuffledPlayerList) {
         if (Constants.REQUIRED_NUM_PLAYERS === 4) {
             // Player teams: Team A - 0, 2 ; Team B - 1, 3
@@ -131,8 +142,6 @@ class Room {
             }
         }
     }
-
-
 
     beginStartingCountdown() {
         let currentRoom = this;
@@ -164,6 +173,11 @@ class Room {
     isRoomFull() {
         return this.getConnectedPlayerCount() === Constants.REQUIRED_NUM_PLAYERS;
     }
+
+    togglePause(paused) {
+        this.ClientAPI.pauseGame(paused);
+        this.gamePaused = paused;
+    }
 }
 
 class ClientAPI {
@@ -185,6 +199,10 @@ class ClientAPI {
 
     updateCountdown(countdown) {
         this.room.io.in(this.room.roomName).emit(Constants.CLIENT_API.GAME_STARTING_COUNTDOWN, countdown);
+    }
+
+    pauseGame(paused) {
+        this.room.io.in(this.room.roomName).emit(Constants.CLIENT_API.GAME_PAUSE, paused);
     }
 }
 

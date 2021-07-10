@@ -66,6 +66,14 @@ io.on('connection', socket => {
                 });
                 return;
             }
+            if (currentPlayerRoom.currentState !== Constants.ROOM_STATES.ROOM_PENDING
+                && (!currentPlayerRoom.gamePaused || !(currentPlayerUsername in currentPlayerRoom.players))) {
+                callback({
+                    status: false,
+                    message: Constants.ROOM_JOIN_FAILURE_MSG_TYPE.ROOM_IN_PROGRESS
+                });
+                return;
+            }
         }
 
         console.log(`Socket ${socket.id} joining ${roomName}`);
@@ -78,6 +86,7 @@ io.on('connection', socket => {
                 currentPlayerRoom.reconnectPlayer(socket, currentPlayerUsername);
 
                 // TO DO: update user's screen on latest updates to current game
+                
             } else {
                 // a new player
                 currentPlayerRoom.addPlayer(socket, currentPlayerUsername);
@@ -89,9 +98,19 @@ io.on('connection', socket => {
             currentPlayerRoom.addPlayer(socket, currentPlayerUsername);
         }
 
-        if (currentPlayerRoom.currentState === Constants.ROOM_STATES.ROOM_PENDING
-            && currentPlayerRoom.isRoomFull()) {
-            currentPlayerRoom.startState(Constants.ROOM_STATES.ROOM_COUNTDOWN);
+        if (currentPlayerRoom.isRoomFull()) {
+            if (currentPlayerRoom.currentState === Constants.ROOM_STATES.ROOM_PENDING) {
+                currentPlayerRoom.startState(Constants.ROOM_STATES.ROOM_COUNTDOWN);
+            }
+            else if (currentPlayerRoom.currentState !== Constants.ROOM_STATES.ROOM_COUNTDOWN
+                && currentPlayerRoom.gamePaused) {
+                currentPlayerRoom.startState(currentPlayerRoom.currentState);
+                currentPlayerRoom.togglePause(false);
+            }
+        } else {
+            if (!([Constants.ROOM_STATES.ROOM_PENDING, Constants.ROOM_STATES.ROOM_COUNTDOWN].includes(currentPlayerRoom.currentState))) {
+                currentPlayerRoom.ClientAPI.pauseGame(true);
+            }
         }
 
         currentPlayerJoined = true;
@@ -118,6 +137,8 @@ io.on('connection', socket => {
             } else if (connectedPlayerCount < Constants.REQUIRED_NUM_PLAYERS) {
                 if (room.currentState === Constants.ROOM_STATES.ROOM_COUNTDOWN) {
                     room.startState(Constants.ROOM_STATES.ROOM_PENDING);
+                } else if (!room.gamePaused && room.currentState !== Constants.ROOM_STATES.ROOM_PENDING) {
+                    room.startState(Constants.ROOM_STATES.ROOM_PAUSE);
                 }
             }
         }

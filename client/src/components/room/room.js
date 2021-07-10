@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
-import { initiateSocket, disconnectSocket, subscribeUpdatePlayers, subscribeStartingCountdown } from '../../utility/networking';
+import {
+    initiateSocket,
+    disconnectSocket,
+    subscribeUpdatePlayers,
+    subscribeStartingCountdown,
+    subscribePause
+} from '../../utility/networking';
 import { useParams, Redirect } from "react-router-dom";
 import PlayerList from './components/player-list';
 
@@ -13,8 +19,9 @@ const displayStatusValues = {
 }
 
 const displayMessageValues = {
-    [Constants.ROOM_JOIN_FAILURE_MSG_TYPE.USERNAME_TAKEN]: 'Someone has already taken that username in this room!',
-    [Constants.ROOM_JOIN_FAILURE_MSG_TYPE.ROOM_FULL]: 'This room is full!'
+    [Constants.ROOM_JOIN_FAILURE_MSG_TYPE.USERNAME_TAKEN]: 'Someone has already taken that username in this game!',
+    [Constants.ROOM_JOIN_FAILURE_MSG_TYPE.ROOM_FULL]: 'This game is full!',
+    [Constants.ROOM_JOIN_FAILURE_MSG_TYPE.ROOM_IN_PROGRESS]: 'This game is currently in progress!'
 }
 
 export const Room = ({ location }) => {
@@ -26,12 +33,12 @@ export const Room = ({ location }) => {
     });
     const [players, setPlayers] = useState([]);
     const [startingCountdown, setStartingCountdown] = useState(null);
+    const [pause, setPause] = useState(false);
     let { roomName } = useParams();
 
     useEffect(() => {
         if (location.state) {
             initiateSocket({ username: location.state.username, roomName: roomName }, (response) => {
-                console.log(response);
                 setDisplayStatus({
                     status: response.status ?
                         displayStatusValues.JOIN_SUCCESS :
@@ -50,6 +57,11 @@ export const Room = ({ location }) => {
                 setStartingCountdown(counter);
             });
 
+            subscribePause((err, paused) => {
+                if (err) return;
+                setPause(paused);
+            });
+
             return () => {
                 disconnectSocket();
             }
@@ -63,16 +75,20 @@ export const Room = ({ location }) => {
     return (
         <div className="room-container">
             {displayStatus.status === displayStatusValues.JOIN_SUCCESS ? <>
-                <div>Room Name: {roomName}</div>
+                <div>Game ID: {roomName}</div>
                 <div>Username: {location.state.username}</div>
 
                 <div>
                     Player list:
-                    <PlayerList players={players}/>
+                    <PlayerList players={players} />
                 </div>
 
                 <div>
                     {startingCountdown ? startingCountdown : null}
+                </div>
+
+                <div>
+                    {pause ? "PAUSED" : null}
                 </div>
             </> : (displayStatus.status === displayStatusValues.JOIN_FAILURE ? <>
                 <p>{displayMessageValues[displayStatus.message]} <button onClick={() => history.push("/")}>Go back home</button></p>

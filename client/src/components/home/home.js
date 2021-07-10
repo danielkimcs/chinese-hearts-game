@@ -29,10 +29,10 @@ export const Home = () => {
                     <input type="text" value={username} onChange={e => setUsername(e.target.value)} />
                 </label>
                 <label>
-                    Room:
+                    Game ID:
                     <input type="text" value={room} onChange={e => setRoom(e.target.value)} />
                 </label>
-                <input type="submit" value="Submit" />
+                <input type="submit" value="Join!" />
             </form>
         </div>
     );
