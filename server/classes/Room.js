@@ -67,6 +67,20 @@ class Room {
         return count;
     }
 
+    getConnectedPlayers() {
+        let connectedPlayers = Array(Constants.REQUIRED_NUM_PLAYERS);
+        let index = 0;
+        for (var username in this.players) {
+            let playerObj = this.players[username];
+            if (index < Constants.REQUIRED_NUM_PLAYERS
+                && playerObj
+                && playerObj.status === Constants.PLAYER_STATUS.PLAYER_CONNECTED) {
+                connectedPlayers[index++] = playerObj;
+            }
+        }
+        return connectedPlayers;
+    }
+
     startState(newState) {
         this.currentState = newState;
         switch (newState) {
@@ -92,6 +106,7 @@ class Room {
                 this.determinePlayerOrder(connectedPlayers);
 
                 // TO DO: update client frontend to reflect teams and player order
+                this.ClientAPI.updatePlayerList();
                 break;
             default:
         }
@@ -117,19 +132,7 @@ class Room {
         }
     }
 
-    getConnectedPlayers() {
-        let connectedPlayers = Array(Constants.REQUIRED_NUM_PLAYERS);
-        let index = 0;
-        for (var username in this.players) {
-            let playerObj = this.players[username];
-            if (index < Constants.REQUIRED_NUM_PLAYERS
-                && playerObj
-                && playerObj.status === Constants.PLAYER_STATUS.PLAYER_CONNECTED) {
-                connectedPlayers[index++] = playerObj;
-            }
-        }
-        return connectedPlayers;
-    }
+
 
     beginStartingCountdown() {
         let currentRoom = this;
@@ -172,7 +175,9 @@ class ClientAPI {
         let playerObjects = Object.values(this.room.players).map(playerObj => {
             return {
                 username: playerObj.username,
-                status: playerObj.status
+                status: playerObj.status,
+                currentTeam: playerObj.currentTeam,
+                nextPlayerUsername: playerObj.nextPlayer ? playerObj.nextPlayer.username : ""
             }
         });
         this.room.io.to(this.room.roomName).emit(Constants.CLIENT_API.UPDATE_PLAYER_LIST, playerObjects);

@@ -89,7 +89,8 @@ io.on('connection', socket => {
             currentPlayerRoom.addPlayer(socket, currentPlayerUsername);
         }
 
-        if (currentPlayerRoom.isRoomFull()) {
+        if (currentPlayerRoom.currentState === Constants.ROOM_STATES.ROOM_PENDING
+            && currentPlayerRoom.isRoomFull()) {
             currentPlayerRoom.startState(Constants.ROOM_STATES.ROOM_COUNTDOWN);
         }
 

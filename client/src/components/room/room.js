@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import { initiateSocket, disconnectSocket, subscribeUpdatePlayers, subscribeStartingCountdown } from '../../utility/networking';
 import { useParams, Redirect } from "react-router-dom";
+import PlayerList from './components/player-list';
 
 const Constants = require('../../../../shared/constants');
 
@@ -67,17 +68,7 @@ export const Room = ({ location }) => {
 
                 <div>
                     Player list:
-                    <ul>
-                        {players.map(player =>
-                            <li key={player.username}
-                                style={{
-                                    color: (player.status === Constants.PLAYER_STATUS.PLAYER_CONNECTED ? "black" : "red")
-                                }}
-                            >
-                                {player.username}
-                            </li>)
-                        }
-                    </ul>
+                    <PlayerList players={players}/>
                 </div>
 
                 <div>

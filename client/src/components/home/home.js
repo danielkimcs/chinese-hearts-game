@@ -7,7 +7,7 @@ export const Home = () => {
     const history = useHistory();
 
     const verifyName = (name) => {
-        if (name.length == 0) {
+        if (name.length === 0) {
             return false;
         }
         return true;
