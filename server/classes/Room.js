@@ -1,6 +1,18 @@
 const Utility = require('../../shared/utility');
 const Constants = require('../../shared/constants');
 const Player = require('./Player');
+const Card = require('./Card');
+
+const SUITS = Object.keys(Constants.CARD_TYPE.SUITS);
+const RANKS = Object.keys(Constants.CARD_TYPE.RANKS);
+
+function createShuffledDeck() {
+    let deck = [];
+    SUITS.forEach(suit => RANKS.forEach(rank => deck.push(new Card(rank, suit))));
+    deck = Utility.shuffleArray(deck);
+    return deck;
+}
+
 
 class Room {
     constructor(io, roomName) {
@@ -63,7 +75,14 @@ class Room {
                 this.startState(Constants.ROOM_STATES.ROUND_DEAL);
                 break;
             case Constants.ROOM_STATES.ROUND_DEAL:
-
+                let shuffledDeck = createShuffledDeck();
+                this.getConnectedPlayers().forEach((player, index) => {
+                    player.currentHand = shuffledDeck.slice(index * 13, (index + 1) * 13);
+                    this.ClientAPI.updatePlayerCards(player);
+                });
+                this.startState(Constants.ROOM_STATES.ROUND_CONFIRM);
+                break;
+            case Constants.ROOM_STATES.ROUND_CONFIRM:
                 break;
             default:
         }
@@ -227,6 +246,14 @@ class ClientAPI {
     pauseGame(paused, player = null) {
         let roomDestination = player ? player.socket.id : this.room.roomName;
         this.room.io.in(roomDestination).emit(Constants.CLIENT_API.GAME_PAUSE, paused);
+    }
+
+    updatePlayerCards(player) {
+        if (!player
+            || !player.socket
+            || !player.socket.id
+            || player.status !== Constants.PLAYER_STATUS.PLAYER_CONNECTED) return;
+        this.room.io.in(player.socket.id).emit(Constants.CLIENT_API.UPDATE_PLAYER_CARDS, player.currentHand);
     }
 }
 

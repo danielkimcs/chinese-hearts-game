@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import Player from '../player';
 const Constants = require('../../../../../../shared/constants');
 
-export const PlayerList = ({ players }) => {
+export const PlayerList = ({ players, currentCards }) => {
     const renderPlayerList = () => {
         let teamPlayers = players.filter(player =>
             player.currentTeam.length > 0
@@ -32,6 +32,10 @@ export const PlayerList = ({ players }) => {
             {renderPlayerList().map(player => {
                 return (<Player key={player.username} {...player} />)
             })}
+            {currentCards.length ?
+                <ul>
+                    {currentCards.map(card => <li>{card.suit} {card.rank}</li>)}
+                </ul> : null}
         </div>
     );
 }

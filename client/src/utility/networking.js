@@ -42,6 +42,13 @@ export const subscribePause = (callback) => {
     });
 }
 
+export const subscribeUpdatePlayerCards = (callback) => {
+    if (!socket) return (true);
+
+    socket.on(Constants.CLIENT_API.UPDATE_PLAYER_CARDS, cards => {
+        return callback(null, cards);
+    });
+}
 // export const sendMessage = (room, message) => {
 //     if (socket) socket.emit('chat', { message, room });
 // }

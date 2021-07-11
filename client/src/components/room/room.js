@@ -5,7 +5,8 @@ import {
     disconnectSocket,
     subscribeUpdatePlayers,
     subscribeStartingCountdown,
-    subscribePause
+    subscribePause,
+    subscribeUpdatePlayerCards
 } from '../../utility/networking';
 import { useParams, Redirect } from "react-router-dom";
 import PlayerList from './components/player-list';
@@ -34,6 +35,7 @@ export const Room = ({ location }) => {
     const [players, setPlayers] = useState([]);
     const [startingCountdown, setStartingCountdown] = useState(null);
     const [pause, setPause] = useState(false);
+    const [currentCards, setCurrentCards] = useState([]);
     let { roomName } = useParams();
 
     useEffect(() => {
@@ -62,6 +64,11 @@ export const Room = ({ location }) => {
                 setPause(paused);
             });
 
+            subscribeUpdatePlayerCards((err, cards) => {
+                if (err) return;
+                setCurrentCards(cards);
+            });
+
             return () => {
                 disconnectSocket();
             }
@@ -80,7 +87,7 @@ export const Room = ({ location }) => {
 
                 <div>
                     Player list:
-                    <PlayerList players={players} />
+                    <PlayerList players={players} currentCards={currentCards} />
                 </div>
 
                 <div>
