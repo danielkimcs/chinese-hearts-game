@@ -45,9 +45,13 @@ export const PlayerList = ({ players, currentCards, trickStarterUsername }) => {
 
     return (
         <div className="player-list-container">
-            {renderPlayerList().map(player => {
-                return (<Player key={player.username} {...player} startingTrick={trickStarterUsername === player.username} />)
-            })}
+            {renderPlayerList().map(player =>
+                <Player
+                    key={player.username}
+                    {...player}
+                    showConfirmedTag={player.hasConfirmedHand && trickStarterUsername.length === 0}
+                    startingTrick={trickStarterUsername === player.username} />
+            )}
             {currentCards.length ?
                 <ul>
                     {currentCards.sort(compareCards).map(card =>

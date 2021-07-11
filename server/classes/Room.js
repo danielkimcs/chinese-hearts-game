@@ -131,6 +131,8 @@ class Room {
         }
 
         switch (this.currentState) {
+            case Constants.ROOM_STATES.TRICK_PLAY:
+                this.ClientAPI.announceStartingPlayer(player);
             case Constants.ROOM_STATES.ROUND_DEAL:
             case Constants.ROOM_STATES.ROUND_CONFIRM:
             case Constants.ROOM_STATES.ROUND_START:
@@ -288,9 +290,10 @@ class ClientAPI {
         this.room.io.in(roomDestination).emit(Constants.CLIENT_API.ASK_CONFIRM_HAND);
     }
     
-    announceStartingPlayer() {
+    announceStartingPlayer(player = null) {
         if (!this.room.currentTrick) return;
-        this.room.io.in(this.room.roomName).emit(Constants.CLIENT_API.ANNOUNCE_STARTING_PLAYER, this.room.currentTrick.startingPlayerUsername);
+        let roomDestination = player ? player.socket.id : this.room.roomName;
+        this.room.io.in(roomDestination).emit(Constants.CLIENT_API.ANNOUNCE_STARTING_PLAYER, this.room.currentTrick.startingPlayerUsername);
     }
 }
 
