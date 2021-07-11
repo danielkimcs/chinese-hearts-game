@@ -75,10 +75,13 @@ class Room {
         this.ClientAPI.updatePlayerList();
     }
 
-    reconnectPlayer(newSocket, username) {
-        if (!(username in this.players)) return;
-        this.players[username].setSocket(newSocket);
-        this.players[username].status = Constants.PLAYER_STATUS.PLAYER_CONNECTED;
+    replacePlayer(playerToReplace, newSocket, newUsername) {
+        if (!(newUsername || newSocket)) return;
+        delete this.players[playerToReplace.username];
+        playerToReplace.username = newUsername;
+        playerToReplace.socket = newSocket;
+        playerToReplace.status = Constants.PLAYER_STATUS.PLAYER_CONNECTED;
+        this.players[newUsername] = playerToReplace;
         this.ClientAPI.updatePlayerList();
     }
 
@@ -98,6 +101,16 @@ class Room {
             }
         }
         this.ClientAPI.updatePlayerList();
+    }
+
+    fetchDisconnectedPlayer() {
+        for (var username in this.players) {
+            let playerObj = this.players[username];
+            if (playerObj && playerObj.status === Constants.PLAYER_STATUS.PLAYER_DISCONNECTED) {
+                return playerObj;
+            }
+        }
+        return null;
     }
 
     getConnectedPlayerCount() {

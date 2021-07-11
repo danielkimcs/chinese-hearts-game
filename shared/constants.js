@@ -4,6 +4,7 @@ module.exports = Object.freeze({
     ROOM_JOIN_FAILURE_MSG_TYPE: {
         USERNAME_TAKEN: 'USERNAME_TAKEN',
         ROOM_FULL: 'ROOM_FULL',
+        GENERAL_ERROR: 'GENERAL_ERROR',
         ROOM_IN_PROGRESS: 'ROOM_IN_PROGRESS',
     },
     TEAM_TYPE: {

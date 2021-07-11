@@ -28,6 +28,7 @@ export const Home = () => {
                     Username:
                     <input type="text" value={username} onChange={e => setUsername(e.target.value)} />
                 </label>
+                <br />
                 <label>
                     Game ID:
                     <input type="text" value={room} onChange={e => setRoom(e.target.value)} />

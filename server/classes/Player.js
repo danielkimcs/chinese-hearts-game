@@ -12,10 +12,8 @@ class Player {
         this.currentHand = [];
         this.collectedCards = [];
     }
+
     
-    setSocket(newSocket) {
-        this.socket = newSocket;
-    }
 }
 
 module.exports = Player;

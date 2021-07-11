@@ -52,13 +52,6 @@ io.on('connection', socket => {
 
         if (currentPlayerRoomName in rooms) {
             currentPlayerRoom = rooms[currentPlayerRoomName];
-            if (currentPlayerRoom.isUsernameTaken(currentPlayerUsername)) {
-                callback({
-                    status: false,
-                    message: Constants.ROOM_JOIN_FAILURE_MSG_TYPE.USERNAME_TAKEN
-                });
-                return;
-            }
             if (currentPlayerRoom.isRoomFull()) {
                 callback({
                     status: false,
@@ -66,38 +59,45 @@ io.on('connection', socket => {
                 });
                 return;
             }
-            if (currentPlayerRoom.currentState !== Constants.ROOM_STATES.ROOM_PENDING
-                && (!currentPlayerRoom.gamePaused || !(currentPlayerUsername in currentPlayerRoom.players))) {
+            if (currentPlayerRoom.isUsernameTaken(currentPlayerUsername)) {
                 callback({
                     status: false,
-                    message: Constants.ROOM_JOIN_FAILURE_MSG_TYPE.ROOM_IN_PROGRESS
+                    message: Constants.ROOM_JOIN_FAILURE_MSG_TYPE.USERNAME_TAKEN
                 });
                 return;
             }
-        }
 
-        console.log(`Socket ${socket.id} joining ${roomName}`);
-        socket.join(currentPlayerRoomName);
+            console.log(`Socket ${socket.id} joining ${roomName}`);
+            socket.join(currentPlayerRoomName);
 
-        if (currentPlayerRoomName in rooms) {
-            currentPlayerRoom = rooms[currentPlayerRoomName];
-            if (currentPlayerUsername in currentPlayerRoom.players) {
-                // same username but different socket
-                currentPlayerRoom.reconnectPlayer(socket, currentPlayerUsername);
-
-                // TO DO: update user's screen on latest updates to current game
-                
-            } else {
-                // a new player
+            // Room is not full, and there is no connected player with same username
+            if (currentPlayerRoom.currentState === Constants.ROOM_STATES.ROOM_PENDING) {
                 currentPlayerRoom.addPlayer(socket, currentPlayerUsername);
+            } else {
+                // Replace disconnected player
+                let playerToReplace = (currentPlayerUsername in currentPlayerRoom.players) ?
+                    currentPlayerRoom.players[currentPlayerUsername]
+                    : currentPlayerRoom.fetchDisconnectedPlayer();
+                if (!playerToReplace) {
+                    callback({
+                        status: false,
+                        message: Constants.ROOM_JOIN_FAILURE_MSG_TYPE.GENERAL_ERROR
+                    });
+                    return;
+                }
+                currentPlayerRoom.replacePlayer(playerToReplace, socket, currentPlayerUsername);
+                // Now update player screen
             }
-        }
-        else {
+        } else {
+            console.log(`Socket ${socket.id} joining ${roomName}`);
+            socket.join(currentPlayerRoomName);
+
             rooms[currentPlayerRoomName] = new Room(io, currentPlayerRoomName);
             currentPlayerRoom = rooms[currentPlayerRoomName];
             currentPlayerRoom.addPlayer(socket, currentPlayerUsername);
         }
 
+        // Room is now full so start countdown or resume game
         if (currentPlayerRoom.isRoomFull()) {
             if (currentPlayerRoom.currentState === Constants.ROOM_STATES.ROOM_PENDING) {
                 currentPlayerRoom.startState(Constants.ROOM_STATES.ROOM_COUNTDOWN);
@@ -107,8 +107,12 @@ io.on('connection', socket => {
                 currentPlayerRoom.startState(currentPlayerRoom.currentState);
                 currentPlayerRoom.togglePause(false);
             }
-        } else {
-            if (!([Constants.ROOM_STATES.ROOM_PENDING, Constants.ROOM_STATES.ROOM_COUNTDOWN].includes(currentPlayerRoom.currentState))) {
+        }
+
+        // The following won't be necessary when I write up a method for updating a replaced player's screen
+        else {
+            if (currentPlayerRoom.currentState !== Constants.ROOM_STATES.ROOM_PENDING
+                && currentPlayerRoom.currentState !== Constants.ROOM_STATES.ROOM_COUNTDOWN) {
                 currentPlayerRoom.ClientAPI.pauseGame(true);
             }
         }
@@ -122,24 +126,27 @@ io.on('connection', socket => {
 
     socket.on('disconnect', () => {
         console.log(socket.id, " disconnected");
-        if (!currentPlayerJoined) return;
+        if (!currentPlayerUsername || !currentPlayerRoomName || !currentPlayerJoined) return;
+        if (!(currentPlayerRoomName in rooms)) return;
 
         if (socket.id in clients) {
             delete clients[socket.id];
         }
-        if (currentPlayerUsername && currentPlayerRoomName in rooms) {
-            let room = rooms[currentPlayerRoomName];
-            room.disconnectPlayer(currentPlayerUsername);
 
-            let connectedPlayerCount = room.getConnectedPlayerCount();
-            if (connectedPlayerCount === 0) {
-                delete rooms[currentPlayerRoomName];
-            } else if (connectedPlayerCount < Constants.REQUIRED_NUM_PLAYERS) {
-                if (room.currentState === Constants.ROOM_STATES.ROOM_COUNTDOWN) {
-                    room.startState(Constants.ROOM_STATES.ROOM_PENDING);
-                } else if (!room.gamePaused && room.currentState !== Constants.ROOM_STATES.ROOM_PENDING) {
-                    room.startState(Constants.ROOM_STATES.ROOM_PAUSE);
-                }
+        let room = rooms[currentPlayerRoomName];
+        room.disconnectPlayer(currentPlayerUsername);
+
+        let connectedPlayerCount = room.getConnectedPlayerCount();
+        if (connectedPlayerCount === 0) {
+            delete rooms[currentPlayerRoomName];
+        } else if (connectedPlayerCount < Constants.REQUIRED_NUM_PLAYERS) {
+            if (room.currentState === Constants.ROOM_STATES.ROOM_PENDING) return;
+            if (room.gamePaused) return;
+
+            if (room.currentState === Constants.ROOM_STATES.ROOM_COUNTDOWN) {
+                room.startState(Constants.ROOM_STATES.ROOM_PENDING);
+            } else if (!room.gamePaused) {
+                room.startState(Constants.ROOM_STATES.ROOM_PAUSE);
             }
         }
     });
