@@ -115,7 +115,7 @@ export const Room = ({ location }) => {
                     {pause ? "PAUSED" : null}
                 </div>
             </> : (displayStatus.status === displayStatusValues.JOIN_FAILURE ? <>
-                <p>{displayMessageValues[displayStatus.message]} <button onClick={() => history.push("/")}>Go back home</button></p>
+                <p>{displayStatus.message} {displayMessageValues[displayStatus.message]} <button onClick={() => history.push("/")}>Go back home</button></p>
             </> : <p>Loading...</p>)}
         </div>
     );

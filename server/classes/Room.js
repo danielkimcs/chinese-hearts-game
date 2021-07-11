@@ -86,7 +86,13 @@ class Room {
                 this.startState(Constants.ROOM_STATES.ROUND_CONFIRM);
                 break;
             case Constants.ROOM_STATES.ROUND_CONFIRM:
-                this.ClientAPI.askConfirmHand();
+                Object.keys(this.players).forEach(playerUsername => {
+                    let player = this.players[playerUsername];
+                    if (!player.hasConfirmedHand) {
+                        this.ClientAPI.askConfirmHand(player)
+                    }
+                });
+
                 break;
             default:
         }
@@ -123,7 +129,7 @@ class Room {
                 this.ClientAPI.updatePlayerCards(player);
                 break;
         }
-
+        
     }
 
     disconnectPlayer(username) {
@@ -135,12 +141,12 @@ class Room {
     }
 
     removeDisconnectedPlayers() {
-        for (var username in this.players) {
+        Object.keys(this.players).forEach(username => {
             let playerObj = this.players[username];
             if (playerObj && playerObj.status === Constants.PLAYER_STATUS.PLAYER_DISCONNECTED) {
                 delete this.players[username];
             }
-        }
+        });
         this.ClientAPI.updatePlayerList();
     }
 
@@ -156,24 +162,24 @@ class Room {
 
     getConnectedPlayerCount() {
         let count = 0;
-        for (var username in this.players) {
+        Object.keys(this.players).forEach(username => {
             let playerObj = this.players[username];
             if (playerObj && playerObj.status === Constants.PLAYER_STATUS.PLAYER_CONNECTED) count++;
-        }
+        });
         return count;
     }
 
     getConnectedPlayers() {
         let connectedPlayers = Array(Constants.REQUIRED_NUM_PLAYERS);
         let index = 0;
-        for (var username in this.players) {
+        Object.keys(this.players).forEach(username => {
             let playerObj = this.players[username];
             if (index < Constants.REQUIRED_NUM_PLAYERS
                 && playerObj
                 && playerObj.status === Constants.PLAYER_STATUS.PLAYER_CONNECTED) {
                 connectedPlayers[index++] = playerObj;
             }
-        }
+        });
         return connectedPlayers;
     }
 
