@@ -27,6 +27,14 @@ export const PlayerList = ({ players, currentCards }) => {
         }
     }
 
+    const compareCards = (card1, card2) => {
+        if (card1.suit !== card2.suit) {
+            return Constants.CARD_TYPE.SUITS[card2.suit] - Constants.CARD_TYPE.SUITS[card1.suit];
+        } else {
+            return Constants.CARD_TYPE.RANKS[card2.rank] - Constants.CARD_TYPE.RANKS[card1.rank];
+        }
+    }
+
     return (
         <div className="player-list-container">
             {renderPlayerList().map(player => {
@@ -34,7 +42,7 @@ export const PlayerList = ({ players, currentCards }) => {
             })}
             {currentCards.length ?
                 <ul>
-                    {currentCards.map(card => <li>{card.suit} {card.rank}</li>)}
+                    {currentCards.sort(compareCards).map(card => <li>{card.suit} {card.rank}</li>)}
                 </ul> : null}
         </div>
     );

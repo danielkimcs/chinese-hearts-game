@@ -23,10 +23,10 @@ module.exports = Object.freeze({
     },
     CARD_TYPE: {
         SUITS: {
-            HEART: 'HEART',
-            CLUB: 'CLUB',
-            DIAMOND: 'DIAMOND',
-            SPADE: 'SPADE'
+            HEART: 4,
+            CLUB: 3,
+            DIAMOND: 2,
+            SPADE: 1
         },
         RANKS: {
             '2': 2,
