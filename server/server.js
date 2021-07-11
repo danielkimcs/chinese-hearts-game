@@ -149,6 +149,7 @@ io.on('connection', socket => {
 
         let room = rooms[currentPlayerRoomName];
         if (room.currentState !== Constants.ROOM_STATES.ROUND_CONFIRM) return;
+        if (room.gamePaused) return;
 
         let currentPlayer = room.players[currentPlayerUsername];
         let actualCard = currentPlayer.currentHand.filter(c => c.suit === card.suit && c.rank === card.rank)[0];
@@ -163,6 +164,8 @@ io.on('connection', socket => {
         if (!currentPlayerUsername || !currentPlayerRoomName || !currentPlayerJoined) return;
         let room = rooms[currentPlayerRoomName];
         if (room.currentState !== Constants.ROOM_STATES.ROUND_CONFIRM) return;
+        if (room.gamePaused) return;
+
         let currentPlayer = room.players[currentPlayerUsername];
         currentPlayer.hasConfirmedHand = true;
 

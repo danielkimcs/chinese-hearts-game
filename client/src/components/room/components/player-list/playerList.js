@@ -3,7 +3,7 @@ import Player from '../player';
 import { sendFaceDownCard } from '../../../../utility/networking';
 const Constants = require('../../../../../../shared/constants');
 
-export const PlayerList = ({ players, currentCards, trickStarterUsername }) => {
+export const PlayerList = ({ players, currentCards, trickStarterUsername, pause }) => {
     const renderPlayerList = () => {
         let teamPlayers = players.filter(player =>
             player.currentTeam.length > 0
@@ -39,6 +39,7 @@ export const PlayerList = ({ players, currentCards, trickStarterUsername }) => {
     const setFaceDown = (card) => {
         if (card.faceDown) return;
         if (!(Constants.CARD_TYPE.SPECIAL.includes(card.rank + card.suit))) return;
+        if (pause) return;
 
         sendFaceDownCard(card);
     }

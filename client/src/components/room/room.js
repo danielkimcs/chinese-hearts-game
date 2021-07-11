@@ -45,6 +45,7 @@ export const Room = ({ location }) => {
     let { roomName } = useParams();
 
     const confirmHand = () => {
+        if (pause) return;
         setHasConfirmedHand(true);
         sendHandConfirmation();
     }
@@ -111,7 +112,8 @@ export const Room = ({ location }) => {
                     <PlayerList
                         players={players}
                         currentCards={currentCards}
-                        trickStarterUsername={trickStarterUsername} />
+                        trickStarterUsername={trickStarterUsername}
+                        pause={pause} />
                 </div>
 
                 <div>
