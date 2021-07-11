@@ -2,6 +2,7 @@ const Utility = require('../../shared/utility');
 const Constants = require('../../shared/constants');
 const Player = require('./Player');
 const Card = require('./Card');
+const Trick = require('./Trick');
 
 const COUNTDOWN_INTERVAL_TIME = 100;
 
@@ -34,11 +35,11 @@ class Room {
                 members: []
             }
         };
-        this.currentTrick = undefined;
         this.currentState = Constants.ROOM_STATES.ROOM_PENDING;
-        this.gamePaused = false;
-
         this.countdownInterval = undefined;
+        this.gamePaused = false;
+        
+        this.currentTrick = undefined;
 
         this.ClientAPI = new ClientAPI(this);
     }
@@ -89,10 +90,17 @@ class Room {
                 Object.keys(this.players).forEach(playerUsername => {
                     let player = this.players[playerUsername];
                     if (!player.hasConfirmedHand) {
-                        this.ClientAPI.askConfirmHand(player)
+                        this.ClientAPI.askConfirmHand(player);
                     }
                 });
-
+                break;
+            case Constants.ROOM_STATES.ROUND_START:
+                if (!this.currentTrick) {
+                    let randomFirstPlayerUsername;
+                    randomFirstPlayerUsername = Utility.chooseRandom(this.getConnectedPlayers());
+                    this.currentTrick = new Trick(randomFirstPlayerUsername);
+                }
+                this.startState(Constants.ROOM_STATES.TRICK_PLAY);
                 break;
             default:
         }
@@ -126,10 +134,11 @@ class Room {
         switch (this.currentState) {
             case Constants.ROOM_STATES.ROUND_DEAL:
             case Constants.ROOM_STATES.ROUND_CONFIRM:
+            case Constants.ROOM_STATES.ROUND_START:
                 this.ClientAPI.updatePlayerCards(player);
                 break;
         }
-        
+
     }
 
     disconnectPlayer(username) {

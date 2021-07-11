@@ -16,5 +16,10 @@ let shuffleArray = function (array) {
     return array;
 }
 
+let chooseRandom = function (array) {
+    return array[Math.floor(Math.random() * array.length)];
+}
+
 module.exports.isEmptyObj = isEmptyObj;
 module.exports.shuffleArray = shuffleArray;
+module.exports.chooseRandom = chooseRandom;

@@ -9,9 +9,7 @@ export const Home = () => {
     const history = useHistory();
 
     const verifyName = (username) => {
-        if (username.length === 0) {
-            return false;
-        }
+        if (username.length === 0) return false;
         let isNameValid = username.match(USERNAME_REGEX) != null;
         return isNameValid;
     }
