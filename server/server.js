@@ -170,7 +170,7 @@ io.on('connection', socket => {
 
         // Check if every connected player has confirmed hand
         let everyoneHasConfirmed = room.getConnectedPlayers()
-            .reduce((confirmedSoFar, nextPlayer) => confirmedSoFar && nextPlayer.hasConfirmedHand);
+            .reduce((confirmedSoFar, nextPlayer) => confirmedSoFar && nextPlayer.hasConfirmedHand, true);
 
         if (everyoneHasConfirmed) {
             room.startState(Constants.ROOM_STATES.ROUND_START);
