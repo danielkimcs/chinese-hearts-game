@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
+const USERNAME_REGEX = /^[a-z0-9]+$/i;
+
 export const Home = () => {
     const [username, setUsername] = useState("");
     const [room, setRoom] = useState("");
     const history = useHistory();
 
-    const verifyName = (name) => {
-        if (name.length === 0) {
+    const verifyName = (username) => {
+        if (username.length === 0) {
             return false;
         }
-        return true;
+        let isNameValid = username.match(USERNAME_REGEX) != null;
+        return isNameValid;
     }
 
     const handleSubmit = (event) => {
@@ -18,7 +21,7 @@ export const Home = () => {
         if (verifyName(username)) {
             history.push("/games/"+room, { username });
         } else {
-            alert("Enter username!");
+            alert("Invalid username!");
         }
     }
     return (
