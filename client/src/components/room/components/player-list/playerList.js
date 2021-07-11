@@ -1,8 +1,10 @@
 import React, { useEffect } from 'react';
 import Player from '../player';
+import { sendFaceDownCard } from '../../../../utility/networking';
 const Constants = require('../../../../../../shared/constants');
 
 export const PlayerList = ({ players, currentCards }) => {
+
     const renderPlayerList = () => {
         let teamPlayers = players.filter(player =>
             player.currentTeam.length > 0
@@ -35,6 +37,13 @@ export const PlayerList = ({ players, currentCards }) => {
         }
     }
 
+    const setFaceDown = (card) => {
+        if (card.faceDown) return;
+        if (!(Constants.CARD_TYPE.SPECIAL.includes(card.rank + card.suit))) return;
+        
+        sendFaceDownCard(card);
+    }
+
     return (
         <div className="player-list-container">
             {renderPlayerList().map(player => {
@@ -42,7 +51,13 @@ export const PlayerList = ({ players, currentCards }) => {
             })}
             {currentCards.length ?
                 <ul>
-                    {currentCards.sort(compareCards).map(card => <li>{card.suit} {card.rank}</li>)}
+                    {currentCards.sort(compareCards).map(card =>
+                        <li key={`${card.suit}${card.rank}`}>
+                            <button onClick={() => setFaceDown(card)} >
+                                {card.suit} {card.rank}
+                            </button>
+                            {card.faceDown ? "FACE DOWN" : null}
+                        </li>)}
                 </ul> : null}
         </div>
     );

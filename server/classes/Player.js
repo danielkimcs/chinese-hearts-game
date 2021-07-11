@@ -10,6 +10,8 @@ class Player {
         this.nextPlayer = undefined;
         
         this.currentHand = [];
+        this.numFaceDown = 0;
+        this.hasConfirmedHand = false;
         this.collectedCards = [];
     }
 

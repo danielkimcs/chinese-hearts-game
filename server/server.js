@@ -45,7 +45,7 @@ io.on('connection', socket => {
     let currentPlayerRoomName = undefined;
     let currentPlayerJoined = false;
 
-    socket.on(Constants.ROOM_JOIN, ({ username, roomName }, callback) => {
+    socket.on(Constants.SERVER_EVENTS.ROOM_JOIN, ({ username, roomName }, callback) => {
         currentPlayerUsername = username;
         currentPlayerRoomName = roomName;
         let currentPlayerRoom;
@@ -141,6 +141,39 @@ io.on('connection', socket => {
             } else if (!room.gamePaused) {
                 room.startState(Constants.ROOM_STATES.ROOM_PAUSE);
             }
+        }
+    });
+
+    socket.on(Constants.SERVER_EVENTS.CARD_FACE_DOWN, (card) => {
+        if (!currentPlayerUsername || !currentPlayerRoomName || !currentPlayerJoined) return;
+
+        let room = rooms[currentPlayerRoomName];
+        if (room.currentState !== Constants.ROOM_STATES.ROUND_CONFIRM) return;
+
+        let currentPlayer = room.players[currentPlayerUsername];
+        let actualCard = currentPlayer.currentHand.filter(c => c.suit === card.suit && c.rank === card.rank)[0];
+
+        actualCard.faceDown = true;
+        currentPlayer.numFaceDown++;
+        room.ClientAPI.updatePlayerList();
+        room.ClientAPI.updatePlayerCards(currentPlayer);
+    });
+
+    socket.on(Constants.SERVER_EVENTS.FACE_DOWN_CONFIRMED, () => {
+        if (!currentPlayerUsername || !currentPlayerRoomName || !currentPlayerJoined) return;
+        let room = rooms[currentPlayerRoomName];
+        if (room.currentState !== Constants.ROOM_STATES.ROUND_CONFIRM) return;
+        let currentPlayer = room.players[currentPlayerUsername];
+        currentPlayer.hasConfirmedHand = true;
+
+        room.ClientAPI.updatePlayerList();
+
+        // Check if every connected player has confirmed hand
+        let everyoneHasConfirmed = room.getConnectedPlayers()
+            .reduce((confirmedSoFar, nextPlayer) => confirmedSoFar && nextPlayer.hasConfirmedHand);
+
+        if (everyoneHasConfirmed) {
+            room.startState(Constants.ROOM_STATES.ROUND_START);
         }
     });
 });

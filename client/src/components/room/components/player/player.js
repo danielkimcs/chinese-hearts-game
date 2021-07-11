@@ -6,14 +6,14 @@ const teamColors = {
     [Constants.TEAM_TYPE.TEAM_B]: "blue",
 }
 
-export const Player = ({ username, status, currentTeam, nextPlayerUsername }) => {
+export const Player = ({ username, status, currentTeam, nextPlayerUsername, numFaceDown, hasConfirmedHand }) => {
     return (
         <div className="player-container">
             <p style={{
                 textDecoration: (status === Constants.PLAYER_STATUS.PLAYER_CONNECTED ? "none" : "line-through"),
                 color: (currentTeam.length ? teamColors[currentTeam] : "black")
             }}>
-                {username}
+                {username} {numFaceDown ? numFaceDown + " cards face down" : null} {hasConfirmedHand ? " CONFIRMED" : null}
             </p>
         </div>
     );

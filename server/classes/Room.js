@@ -3,8 +3,11 @@ const Constants = require('../../shared/constants');
 const Player = require('./Player');
 const Card = require('./Card');
 
+const COUNTDOWN_INTERVAL_TIME = 100;
+
 const SUITS = Object.keys(Constants.CARD_TYPE.SUITS);
 const RANKS = Object.keys(Constants.CARD_TYPE.RANKS);
+
 
 function createShuffledDeck() {
     let deck = [];
@@ -83,6 +86,7 @@ class Room {
                 this.startState(Constants.ROOM_STATES.ROUND_CONFIRM);
                 break;
             case Constants.ROOM_STATES.ROUND_CONFIRM:
+                this.ClientAPI.askConfirmHand();
                 break;
             default:
         }
@@ -112,6 +116,14 @@ class Room {
             && this.currentState !== Constants.ROOM_STATES.ROOM_COUNTDOWN) {
             this.ClientAPI.pauseGame(true, player);
         }
+
+        switch (this.currentState) {
+            case Constants.ROOM_STATES.ROUND_DEAL:
+            case Constants.ROOM_STATES.ROUND_CONFIRM:
+                this.ClientAPI.updatePlayerCards(player);
+                break;
+        }
+
     }
 
     disconnectPlayer(username) {
@@ -200,7 +212,7 @@ class Room {
             }
             clientAPI.updateCountdown(countdown);
             countdown--;
-        }, 1000);
+        }, COUNTDOWN_INTERVAL_TIME);
 
         return startingCountdown;
     }
@@ -233,7 +245,9 @@ class ClientAPI {
                 username: playerObj.username,
                 status: playerObj.status,
                 currentTeam: playerObj.currentTeam,
-                nextPlayerUsername: playerObj.nextPlayer ? playerObj.nextPlayer.username : ""
+                nextPlayerUsername: playerObj.nextPlayer ? playerObj.nextPlayer.username : "",
+                hasConfirmedHand: playerObj.hasConfirmedHand,
+                numFaceDown: playerObj.numFaceDown
             }
         });
         this.room.io.to(this.room.roomName).emit(Constants.CLIENT_API.UPDATE_PLAYER_LIST, playerObjects);
@@ -254,6 +268,11 @@ class ClientAPI {
             || !player.socket.id
             || player.status !== Constants.PLAYER_STATUS.PLAYER_CONNECTED) return;
         this.room.io.in(player.socket.id).emit(Constants.CLIENT_API.UPDATE_PLAYER_CARDS, player.currentHand);
+    }
+
+    askConfirmHand(player = null) {
+        let roomDestination = player ? player.socket.id : this.room.roomName;
+        this.room.io.in(roomDestination).emit(Constants.CLIENT_API.ASK_CONFIRM_HAND);
     }
 }
 

@@ -6,7 +6,9 @@ import {
     subscribeUpdatePlayers,
     subscribeStartingCountdown,
     subscribePause,
-    subscribeUpdatePlayerCards
+    subscribeUpdatePlayerCards,
+    subscribeAskConfirmHand,
+    sendHandConfirmation
 } from '../../utility/networking';
 import { useParams, Redirect } from "react-router-dom";
 import PlayerList from './components/player-list';
@@ -36,7 +38,13 @@ export const Room = ({ location }) => {
     const [startingCountdown, setStartingCountdown] = useState(null);
     const [pause, setPause] = useState(false);
     const [currentCards, setCurrentCards] = useState([]);
+    const [hasConfirmedHand, setHasConfirmedHand] = useState(null);
     let { roomName } = useParams();
+
+    const confirmHand = () => {
+        setHasConfirmedHand(true);
+        sendHandConfirmation();
+    }
 
     useEffect(() => {
         if (location.state) {
@@ -69,6 +77,11 @@ export const Room = ({ location }) => {
                 setCurrentCards(cards);
             });
 
+            subscribeAskConfirmHand(err => {
+                if (err) return;
+                setHasConfirmedHand(false);
+            });
+
             return () => {
                 disconnectSocket();
             }
@@ -92,6 +105,10 @@ export const Room = ({ location }) => {
 
                 <div>
                     {startingCountdown ? startingCountdown : null}
+                </div>
+
+                <div>
+                    {hasConfirmedHand === false ? <button onClick={confirmHand}>CONFIRM HAND</button> : null}
                 </div>
 
                 <div>
