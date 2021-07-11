@@ -87,6 +87,7 @@ io.on('connection', socket => {
                 }
                 currentPlayerRoom.replacePlayer(playerToReplace, socket, currentPlayerUsername);
                 // Now update player screen
+                currentPlayerRoom.updateClient(currentPlayerUsername);
             }
         } else {
             console.log(`Socket ${socket.id} joining ${roomName}`);
@@ -106,14 +107,6 @@ io.on('connection', socket => {
                 && currentPlayerRoom.gamePaused) {
                 currentPlayerRoom.startState(currentPlayerRoom.currentState);
                 currentPlayerRoom.togglePause(false);
-            }
-        }
-
-        // The following won't be necessary when I write up a method for updating a replaced player's screen
-        else {
-            if (currentPlayerRoom.currentState !== Constants.ROOM_STATES.ROOM_PENDING
-                && currentPlayerRoom.currentState !== Constants.ROOM_STATES.ROOM_COUNTDOWN) {
-                currentPlayerRoom.ClientAPI.pauseGame(true);
             }
         }
 

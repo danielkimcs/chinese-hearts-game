@@ -85,6 +85,16 @@ class Room {
         this.ClientAPI.updatePlayerList();
     }
 
+    updateClient(username) {
+        let player = this.players[username];
+
+        if (this.gamePaused
+            && this.currentState !== Constants.ROOM_STATES.ROOM_PENDING
+            && this.currentState !== Constants.ROOM_STATES.ROOM_COUNTDOWN) {
+            this.ClientAPI.pauseGame(true, player);
+        }
+    }
+
     disconnectPlayer(username) {
         // delete this.sockets[socket.id];
         if (!(username in this.players)) return;
@@ -214,8 +224,9 @@ class ClientAPI {
         this.room.io.in(this.room.roomName).emit(Constants.CLIENT_API.GAME_STARTING_COUNTDOWN, countdown);
     }
 
-    pauseGame(paused) {
-        this.room.io.in(this.room.roomName).emit(Constants.CLIENT_API.GAME_PAUSE, paused);
+    pauseGame(paused, player = null) {
+        let roomDestination = player ? player.socket.id : this.room.roomName;
+        this.room.io.in(roomDestination).emit(Constants.CLIENT_API.GAME_PAUSE, paused);
     }
 }
 
