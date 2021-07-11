@@ -1,10 +1,9 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import Player from '../player';
 import { sendFaceDownCard } from '../../../../utility/networking';
 const Constants = require('../../../../../../shared/constants');
 
-export const PlayerList = ({ players, currentCards }) => {
-
+export const PlayerList = ({ players, currentCards, trickStarterUsername }) => {
     const renderPlayerList = () => {
         let teamPlayers = players.filter(player =>
             player.currentTeam.length > 0
@@ -40,14 +39,14 @@ export const PlayerList = ({ players, currentCards }) => {
     const setFaceDown = (card) => {
         if (card.faceDown) return;
         if (!(Constants.CARD_TYPE.SPECIAL.includes(card.rank + card.suit))) return;
-        
+
         sendFaceDownCard(card);
     }
 
     return (
         <div className="player-list-container">
             {renderPlayerList().map(player => {
-                return (<Player key={player.username} {...player} />)
+                return (<Player key={player.username} {...player} startingTrick={trickStarterUsername === player.username} />)
             })}
             {currentCards.length ?
                 <ul>

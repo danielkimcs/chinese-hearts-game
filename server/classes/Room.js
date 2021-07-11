@@ -9,7 +9,6 @@ const COUNTDOWN_INTERVAL_TIME = 100;
 const SUITS = Object.keys(Constants.CARD_TYPE.SUITS);
 const RANKS = Object.keys(Constants.CARD_TYPE.RANKS);
 
-
 function createShuffledDeck() {
     let deck = [];
     SUITS.forEach(suit => RANKS.forEach(rank => deck.push(new Card(rank, suit))));
@@ -24,7 +23,6 @@ class Room {
         this.roomName = roomName;
 
         this.players = {};
-        // this.sockets = {};
         this.teams = {
             [Constants.TEAM_TYPE.TEAM_A]: {
                 points: 0,
@@ -38,7 +36,7 @@ class Room {
         this.currentState = Constants.ROOM_STATES.ROOM_PENDING;
         this.countdownInterval = undefined;
         this.gamePaused = false;
-        
+
         this.currentTrick = undefined;
 
         this.ClientAPI = new ClientAPI(this);
@@ -96,18 +94,19 @@ class Room {
                 break;
             case Constants.ROOM_STATES.ROUND_START:
                 if (!this.currentTrick) {
-                    let randomFirstPlayerUsername;
-                    randomFirstPlayerUsername = Utility.chooseRandom(this.getConnectedPlayers());
+                    let randomFirstPlayerUsername = Utility.chooseRandom(this.getConnectedPlayers()).username;
                     this.currentTrick = new Trick(randomFirstPlayerUsername);
                 }
                 this.startState(Constants.ROOM_STATES.TRICK_PLAY);
+                break;
+            case Constants.ROOM_STATES.TRICK_PLAY:
+                this.ClientAPI.announceStartingPlayer();
                 break;
             default:
         }
     }
 
     addPlayer(socket, username) {
-        // this.sockets[socket.id] = socket;
         this.players[username] = new Player(socket, username);
         this.ClientAPI.updatePlayerList();
     }
@@ -142,7 +141,6 @@ class Room {
     }
 
     disconnectPlayer(username) {
-        // delete this.sockets[socket.id];
         if (!(username in this.players)) return;
         this.players[username].status = Constants.PLAYER_STATUS.PLAYER_DISCONNECTED;
         this.players[username].socket = null;
@@ -288,6 +286,11 @@ class ClientAPI {
     askConfirmHand(player = null) {
         let roomDestination = player ? player.socket.id : this.room.roomName;
         this.room.io.in(roomDestination).emit(Constants.CLIENT_API.ASK_CONFIRM_HAND);
+    }
+    
+    announceStartingPlayer() {
+        if (!this.room.currentTrick) return;
+        this.room.io.in(this.room.roomName).emit(Constants.CLIENT_API.ANNOUNCE_STARTING_PLAYER, this.room.currentTrick.startingPlayerUsername);
     }
 }
 

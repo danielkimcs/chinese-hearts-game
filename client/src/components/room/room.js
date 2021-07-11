@@ -8,7 +8,8 @@ import {
     subscribePause,
     subscribeUpdatePlayerCards,
     subscribeAskConfirmHand,
-    sendHandConfirmation
+    sendHandConfirmation,
+    subscribeAnnounceStartingPlayer
 } from '../../utility/networking';
 import { useParams, Redirect } from "react-router-dom";
 import PlayerList from './components/player-list';
@@ -39,6 +40,8 @@ export const Room = ({ location }) => {
     const [pause, setPause] = useState(false);
     const [currentCards, setCurrentCards] = useState([]);
     const [hasConfirmedHand, setHasConfirmedHand] = useState(null);
+    const [trickStarterUsername, setTrickStarterUsername] = useState("");
+
     let { roomName } = useParams();
 
     const confirmHand = () => {
@@ -82,6 +85,11 @@ export const Room = ({ location }) => {
                 setHasConfirmedHand(false);
             });
 
+            subscribeAnnounceStartingPlayer((err, username) => {
+                if (err) return;
+                setTrickStarterUsername(username);
+            });
+
             return () => {
                 disconnectSocket();
             }
@@ -100,7 +108,10 @@ export const Room = ({ location }) => {
 
                 <div>
                     Player list:
-                    <PlayerList players={players} currentCards={currentCards} />
+                    <PlayerList
+                        players={players}
+                        currentCards={currentCards}
+                        trickStarterUsername={trickStarterUsername} />
                 </div>
 
                 <div>

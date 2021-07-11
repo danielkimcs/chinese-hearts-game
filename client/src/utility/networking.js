@@ -69,6 +69,15 @@ export const subscribeAskConfirmHand = (callback) => {
         return callback(null);
     });
 }
+
+export const subscribeAnnounceStartingPlayer = (callback) => {
+    if (!socket) return true;
+    socket.on(Constants.CLIENT_API.ANNOUNCE_STARTING_PLAYER, (username) => {
+        console.log(username);
+        return callback(null, username)
+    });
+}
+
 // export const sendMessage = (room, message) => {
 //     if (socket) socket.emit('chat', { message, room });
 // }
