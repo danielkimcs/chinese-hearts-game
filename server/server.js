@@ -199,16 +199,16 @@ io.on('connection', socket => {
         room.ClientAPI.updatePlayerCards(currentPlayer);
 
         let currentTrick = room.currentTrick;
-        currentTrick.playedCards[currentPlayerUsername] = actualCard;
+        currentTrick.playedCards[currentPlayer.playerId] = actualCard;
 
-        currentTrick.currentTurnPlayerUsername = currentPlayer.nextPlayer.username;
+        currentTrick.currentTurnPlayerId = currentPlayer.nextPlayer.playerId;
 
-        if (currentPlayerUsername === currentTrick.startingPlayerUsername
+        if (currentPlayer.playerId === currentTrick.startingPlayerId
             && !currentTrick.leadingSuit.length) {
             currentTrick.leadingSuit = actualCard.suit;
             room.startState(Constants.ROOM_STATES.TRICK_PENDING);
         }
-        else if (currentTrick.currentTurnPlayerUsername === currentTrick.startingPlayerUsername) {
+        else if (currentTrick.currentTurnPlayerId === currentTrick.startingPlayerId) {
             // Everyone has played their cards
             // room.startState(Constants.ROOM_STATES.TRICK_END);
         }

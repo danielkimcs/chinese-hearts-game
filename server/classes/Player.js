@@ -1,8 +1,10 @@
+const { v4: uuidv4 } = require('uuid');
 const Constants = require('../../shared/constants');
 
 class Player {
     constructor(socket, username) {
         this.username = username;
+        this.playerId = uuidv4();
         this.socket = socket;
         this.status = Constants.PLAYER_STATUS.PLAYER_CONNECTED;
 

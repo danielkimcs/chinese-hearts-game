@@ -96,8 +96,8 @@ class Room {
                 break;
             case Constants.ROOM_STATES.ROUND_START:
                 if (!this.currentTrick) {
-                    let randomFirstPlayerUsername = Utility.chooseRandom(this.getConnectedPlayers()).username;
-                    this.currentTrick = new Trick(randomFirstPlayerUsername);
+                    let randomFirstPlayerId = Utility.chooseRandom(this.getConnectedPlayers()).playerId;
+                    this.currentTrick = new Trick(randomFirstPlayerId);
                 }
                 this.startState(Constants.ROOM_STATES.TRICK_PLAY);
                 break;
@@ -266,6 +266,7 @@ class ClientAPI {
         let playerObjects = Object.values(this.room.players).map(playerObj => {
             return {
                 username: playerObj.username,
+                playerId: playerObj.playerId,
                 status: playerObj.status,
                 currentTeam: playerObj.currentTeam,
                 nextPlayerUsername: playerObj.nextPlayer ? playerObj.nextPlayer.username : "",

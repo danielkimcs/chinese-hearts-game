@@ -57,7 +57,6 @@ export const PlayerList = ({ myUsername, players, roomState, currentCards, curre
     }
 
     const playCard = (card) => {
-        console.log(currentTrick);
         if (isLegalMove(currentTrick, currentCards, card)) {
             sendPlayedCard(card);
         } else {
@@ -72,8 +71,8 @@ export const PlayerList = ({ myUsername, players, roomState, currentCards, curre
                     key={player.username}
                     {...player}
                     showConfirmedTag={player.hasConfirmedHand && roomState === Constants.ROOM_STATES.ROUND_CONFIRM}
-                    currentTurn={currentTrick && currentTrick.currentTurnPlayerUsername === player.username}
-                    playedCard={currentTrick && player.username in currentTrick.playedCards ? currentTrick.playedCards[player.username] : null} />
+                    currentTurn={currentTrick && currentTrick.currentTurnPlayerId === player.playerId}
+                    playedCard={currentTrick && player.playerId in currentTrick.playedCards ? currentTrick.playedCards[player.playerId] : null} />
             )}
             {currentCards.length ?
                 <ul>
@@ -83,7 +82,7 @@ export const PlayerList = ({ myUsername, players, roomState, currentCards, curre
                                 <button onClick={() => setFaceDown(card)} >
                                     {card.suit} {card.rank} {isSpecialCard(card) ? "!" : null}
                                 </button>
-                                : (currentTrick && currentTrick.currentTurnPlayerUsername === myUsername ?
+                                : (currentTrick && currentTrick.currentTurnPlayerId === players.filter(player => player.username === myUsername)[0].playerId ?
                                     <button onClick={() => playCard(card)} >
                                         {card.suit} {card.rank}
                                     </button>

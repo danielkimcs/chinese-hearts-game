@@ -1,9 +1,9 @@
 const Constants = require('../../shared/constants');
 
 class Trick {
-    constructor(startingPlayerUsername) {
-        this.startingPlayerUsername = startingPlayerUsername;
-        this.currentTurnPlayerUsername = startingPlayerUsername;
+    constructor(startingPlayerId) {
+        this.startingPlayerId = startingPlayerId;
+        this.currentTurnPlayerId = startingPlayerId;
         this.leadingSuit = "";
         this.playedCards = {};
     }    
