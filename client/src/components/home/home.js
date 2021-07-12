@@ -26,21 +26,23 @@ export const Home = () => {
         }
         history.push("/games/" + room, { username });
     }
-    
+
     return (
-        <div className="home-container">
-            <form onSubmit={handleSubmit}>
-                <label>
-                    Username:
-                    <input type="text" value={username} onChange={e => setUsername(e.target.value)} />
-                </label>
-                <br />
-                <label>
-                    Game ID:
-                    <input type="text" value={room} onChange={e => setRoom(e.target.value)} />
-                </label>
-                <input type="submit" value="Join!" />
-            </form>
+        <div className="container mx-auto">
+            <div className="width-1/3 mx-auto">
+                <form onSubmit={handleSubmit}>
+                    <label>
+                        Username:
+                        <input className="border" type="text" value={username} onChange={e => setUsername(e.target.value)} />
+                    </label>
+                    <br />
+                    <label>
+                        Game ID:
+                        <input type="text" value={room} onChange={e => setRoom(e.target.value)} />
+                    </label>
+                    <input type="submit" value="Join!" />
+                </form>
+            </div>
         </div>
     );
 }
