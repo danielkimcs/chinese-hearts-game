@@ -33,15 +33,20 @@ module.exports = {
             },
             {
                 test: /\.css$/,
+                exclude: /node_modules/,
                 use: [
+                    // 'style-loader',
                     {
                         loader: MiniCssExtractPlugin.loader,
+                        options: {}
                     },
                     'css-loader',
+                    'postcss-loader'
                 ],
             },
             {
                 test: /\.(png|jpg|gif)$/i,
+                exclude: /node_modules/,
                 use: {
                     loader: "url-loader",
                     options: {
@@ -52,6 +57,7 @@ module.exports = {
             },
             {
                 test: /\.(eot|otf|ttf|woff|woff2|ico)$/,
+                exclude: /node_modules/,
                 loader: require.resolve("file-loader"),
                 options: {
                     name: "static/media/[name].[hash:8].[ext]"
