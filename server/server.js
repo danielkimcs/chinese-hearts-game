@@ -20,7 +20,8 @@ if (process.env.NODE_ENV === 'development') {
     app.use(webpackDevMiddleware(compiler, {
         publicPath: '/'
     }));
-} else {
+}
+else {
     // Static serve the dist/ folder in production
     app.use(express.static('dist'));
 }
@@ -73,7 +74,8 @@ io.on('connection', socket => {
             // Room is not full, and there is no connected player with same username
             if (currentPlayerRoom.currentState === Constants.ROOM_STATES.ROOM_PENDING) {
                 currentPlayerRoom.addPlayer(socket, currentPlayerUsername);
-            } else {
+            } 
+            else {
                 // Replace disconnected player
                 let playerToReplace = (currentPlayerUsername in currentPlayerRoom.players) ?
                     currentPlayerRoom.players[currentPlayerUsername]
@@ -89,7 +91,8 @@ io.on('connection', socket => {
                 // Now update player screen
                 currentPlayerRoom.updateClient(currentPlayerUsername);
             }
-        } else {
+        } 
+        else {
             console.log(`Socket ${socket.id} joining ${roomName}`);
             socket.join(currentPlayerRoomName);
 
@@ -132,13 +135,15 @@ io.on('connection', socket => {
         let connectedPlayerCount = room.getConnectedPlayerCount();
         if (connectedPlayerCount === 0) {
             delete rooms[currentPlayerRoomName];
-        } else if (connectedPlayerCount < Constants.REQUIRED_NUM_PLAYERS) {
+        } 
+        else if (connectedPlayerCount < Constants.REQUIRED_NUM_PLAYERS) {
             if (room.currentState === Constants.ROOM_STATES.ROOM_PENDING) return;
             if (room.gamePaused) return;
 
             if (room.currentState === Constants.ROOM_STATES.ROOM_COUNTDOWN) {
                 room.startState(Constants.ROOM_STATES.ROOM_PENDING);
-            } else if (!room.gamePaused) {
+            } 
+            else if (!room.gamePaused) {
                 room.startState(Constants.ROOM_STATES.ROOM_PAUSE);
             }
         }
@@ -177,6 +182,38 @@ io.on('connection', socket => {
 
         if (everyoneHasConfirmed) {
             room.startState(Constants.ROOM_STATES.ROUND_START);
+        }
+    });
+
+    socket.on(Constants.SERVER_EVENTS.CARD_PLAYED, (card) => {
+        if (!currentPlayerUsername || !currentPlayerRoomName || !currentPlayerJoined) return;
+
+        let room = rooms[currentPlayerRoomName];
+        if (!(room.currentState === Constants.ROOM_STATES.TRICK_PLAY
+            || room.currentState === Constants.ROOM_STATES.TRICK_PENDING)) return;
+        if (room.gamePaused) return;
+        if (!room.currentTrick) return;
+
+        let currentPlayer = room.players[currentPlayerUsername];
+        let actualCard = currentPlayer.removeCard(card);
+        room.ClientAPI.updatePlayerCards(currentPlayer);
+
+        let currentTrick = room.currentTrick;
+        currentTrick.playedCards[currentPlayerUsername] = actualCard;
+
+        currentTrick.currentTurnPlayerUsername = currentPlayer.nextPlayer.username;
+
+        if (currentPlayerUsername === currentTrick.startingPlayerUsername
+            && !currentTrick.leadingSuit.length) {
+            currentTrick.leadingSuit = actualCard.suit;
+            room.startState(Constants.ROOM_STATES.TRICK_PENDING);
+        }
+        else if (currentTrick.currentTurnPlayerUsername === currentTrick.startingPlayerUsername) {
+            // Everyone has played their cards
+            // room.startState(Constants.ROOM_STATES.TRICK_END);
+        }
+        else {
+            room.startState(Constants.ROOM_STATES.TRICK_PENDING);
         }
     });
 });

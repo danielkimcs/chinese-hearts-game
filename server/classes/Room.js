@@ -48,6 +48,8 @@ class Room {
             this.currentState = newState;
         }
 
+        this.ClientAPI.updateRoomState();
+
         switch (newState) {
             case Constants.ROOM_STATES.ROOM_PAUSE:
                 this.togglePause(true);
@@ -100,7 +102,10 @@ class Room {
                 this.startState(Constants.ROOM_STATES.TRICK_PLAY);
                 break;
             case Constants.ROOM_STATES.TRICK_PLAY:
-                this.ClientAPI.announceStartingPlayer();
+                this.ClientAPI.askCard();
+                break;
+            case Constants.ROOM_STATES.TRICK_PENDING:
+                this.ClientAPI.askCard();
                 break;
             default:
         }
@@ -124,6 +129,8 @@ class Room {
     updateClient(username) {
         let player = this.players[username];
 
+        this.ClientAPI.updateRoomState(player);
+
         if (this.gamePaused
             && this.currentState !== Constants.ROOM_STATES.ROOM_PENDING
             && this.currentState !== Constants.ROOM_STATES.ROOM_COUNTDOWN) {
@@ -132,7 +139,8 @@ class Room {
 
         switch (this.currentState) {
             case Constants.ROOM_STATES.TRICK_PLAY:
-                this.ClientAPI.announceStartingPlayer(player);
+            case Constants.ROOM_STATES.TRICK_PENDING:
+                this.ClientAPI.askCard();
             case Constants.ROOM_STATES.ROUND_DEAL:
             case Constants.ROOM_STATES.ROUND_CONFIRM:
             case Constants.ROOM_STATES.ROUND_START:
@@ -272,6 +280,11 @@ class ClientAPI {
         this.room.io.in(this.room.roomName).emit(Constants.CLIENT_API.GAME_STARTING_COUNTDOWN, countdown);
     }
 
+    updateRoomState(player = null) {
+        let roomDestination = player ? player.socket.id : this.room.roomName;
+        this.room.io.in(roomDestination).emit(Constants.CLIENT_API.UPDATE_ROOM_STATE, this.room.currentState);
+    }
+
     pauseGame(paused, player = null) {
         let roomDestination = player ? player.socket.id : this.room.roomName;
         this.room.io.in(roomDestination).emit(Constants.CLIENT_API.GAME_PAUSE, paused);
@@ -289,11 +302,11 @@ class ClientAPI {
         let roomDestination = player ? player.socket.id : this.room.roomName;
         this.room.io.in(roomDestination).emit(Constants.CLIENT_API.ASK_CONFIRM_HAND);
     }
-    
-    announceStartingPlayer(player = null) {
-        if (!this.room.currentTrick) return;
-        let roomDestination = player ? player.socket.id : this.room.roomName;
-        this.room.io.in(roomDestination).emit(Constants.CLIENT_API.ANNOUNCE_STARTING_PLAYER, this.room.currentTrick.startingPlayerUsername);
+
+    askCard() {
+        let currentTrick = this.room.currentTrick;
+        if (!currentTrick) return;
+        this.room.io.in(this.room.roomName).emit(Constants.CLIENT_API.TRICK_ASK_CARD, currentTrick);
     }
 }
 

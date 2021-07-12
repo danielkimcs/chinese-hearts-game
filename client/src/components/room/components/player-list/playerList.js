@@ -1,9 +1,17 @@
 import React from 'react';
 import Player from '../player';
-import { sendFaceDownCard } from '../../../../utility/networking';
+import {
+    sendFaceDownCard,
+    sendPlayedCard
+} from '../../../../utility/networking';
 const Constants = require('../../../../../../shared/constants');
 
-export const PlayerList = ({ players, currentCards, trickStarterUsername, pause }) => {
+const isLegalMove = (currentTrick, currentHand, playedCard) => {
+    if (!currentTrick.leadingSuit.length || playedCard.suit === currentTrick.leadingSuit) return true;
+    return !currentHand.filter(card => card.suit === currentTrick.leadingSuit).length;
+}
+
+export const PlayerList = ({ myUsername, players, roomState, currentCards, currentTrick, pause }) => {
     const renderPlayerList = () => {
         let teamPlayers = players.filter(player =>
             player.currentTeam.length > 0
@@ -36,12 +44,25 @@ export const PlayerList = ({ players, currentCards, trickStarterUsername, pause 
         }
     }
 
+    const isSpecialCard = (card) => {
+        return Constants.CARD_TYPE.SPECIAL.includes(card.rank + card.suit);
+    }
+
     const setFaceDown = (card) => {
         if (card.faceDown) return;
-        if (!(Constants.CARD_TYPE.SPECIAL.includes(card.rank + card.suit))) return;
+        if (!isSpecialCard(card)) return;
         if (pause) return;
 
         sendFaceDownCard(card);
+    }
+
+    const playCard = (card) => {
+        console.log(currentTrick);
+        if (isLegalMove(currentTrick, currentCards, card)) {
+            sendPlayedCard(card);
+        } else {
+            alert("NOT legal!");
+        }
     }
 
     return (
@@ -50,16 +71,23 @@ export const PlayerList = ({ players, currentCards, trickStarterUsername, pause 
                 <Player
                     key={player.username}
                     {...player}
-                    showConfirmedTag={player.hasConfirmedHand && trickStarterUsername.length === 0}
-                    startingTrick={trickStarterUsername === player.username} />
+                    showConfirmedTag={player.hasConfirmedHand && roomState === Constants.ROOM_STATES.ROUND_CONFIRM}
+                    currentTurn={currentTrick && currentTrick.currentTurnPlayerUsername === player.username}
+                    playedCard={currentTrick && player.username in currentTrick.playedCards ? currentTrick.playedCards[player.username] : null} />
             )}
             {currentCards.length ?
                 <ul>
                     {currentCards.sort(compareCards).map(card =>
                         <li key={`${card.suit}${card.rank}`}>
-                            <button onClick={() => setFaceDown(card)} >
-                                {card.suit} {card.rank}
-                            </button>
+                            {roomState === Constants.ROOM_STATES.ROUND_CONFIRM ?
+                                <button onClick={() => setFaceDown(card)} >
+                                    {card.suit} {card.rank} {isSpecialCard(card) ? "!" : null}
+                                </button>
+                                : (currentTrick && currentTrick.currentTurnPlayerUsername === myUsername ?
+                                    <button onClick={() => playCard(card)} >
+                                        {card.suit} {card.rank}
+                                    </button>
+                                    : <p>{card.suit} {card.rank}</p>)}
                             {card.faceDown ? "FACE DOWN" : null}
                         </li>)}
                 </ul> : null}

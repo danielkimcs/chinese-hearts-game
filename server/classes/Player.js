@@ -15,7 +15,21 @@ class Player {
         this.collectedCards = [];
     }
 
-    
+    removeCard(card) {
+        let returnCardIndex = -1;
+        for (let index in this.currentHand) {
+            let currentCard = this.currentHand[index];
+            if (currentCard.suit === card.suit && currentCard.rank === card.rank) {
+                returnCardIndex = index;
+                break;
+            }
+        }
+        if (returnCardIndex < 0) return null;
+
+        let returnCard = this.currentHand[returnCardIndex];
+        this.currentHand.splice(returnCardIndex, 1);
+        return returnCard;
+    }
 }
 
 module.exports = Player;

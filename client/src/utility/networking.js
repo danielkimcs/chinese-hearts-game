@@ -24,6 +24,12 @@ export const sendFaceDownCard = (card) => {
     socket.emit(Constants.SERVER_EVENTS.CARD_FACE_DOWN, card);
 }
 
+export const sendPlayedCard = (card) => {
+    if (!socket) return true;
+
+    socket.emit(Constants.SERVER_EVENTS.CARD_PLAYED, card);
+}
+
 export const sendHandConfirmation = () => {
     if (!socket) return true;
 
@@ -62,6 +68,14 @@ export const subscribeUpdatePlayerCards = (callback) => {
     });
 }
 
+export const subscribeRoomState = (callback) => {
+    if (!socket) return true;
+
+    socket.on(Constants.CLIENT_API.UPDATE_ROOM_STATE, roomState => {
+        return callback(null, roomState);
+    });
+}
+
 export const subscribeAskConfirmHand = (callback) => {
     if (!socket) return true;
 
@@ -70,11 +84,10 @@ export const subscribeAskConfirmHand = (callback) => {
     });
 }
 
-export const subscribeAnnounceStartingPlayer = (callback) => {
+export const subscribeAskCard = (callback) => {
     if (!socket) return true;
-    socket.on(Constants.CLIENT_API.ANNOUNCE_STARTING_PLAYER, (username) => {
-        console.log(username);
-        return callback(null, username)
+    socket.on(Constants.CLIENT_API.TRICK_ASK_CARD, (trick) => {
+        return callback(null, trick);
     });
 }
 

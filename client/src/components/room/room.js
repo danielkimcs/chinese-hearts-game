@@ -3,13 +3,15 @@ import { useHistory } from 'react-router-dom';
 import {
     initiateSocket,
     disconnectSocket,
+    sendHandConfirmation,
     subscribeUpdatePlayers,
+    subscribeRoomState,
     subscribeStartingCountdown,
     subscribePause,
     subscribeUpdatePlayerCards,
     subscribeAskConfirmHand,
-    sendHandConfirmation,
-    subscribeAnnounceStartingPlayer
+    subscribeAnnounceStartingPlayer,
+    subscribeAskCard
 } from '../../utility/networking';
 import { useParams, Redirect } from "react-router-dom";
 import PlayerList from './components/player-list';
@@ -36,11 +38,12 @@ export const Room = ({ location }) => {
         message: ""
     });
     const [players, setPlayers] = useState([]);
+    const [roomState, setRoomState] = useState("");
     const [startingCountdown, setStartingCountdown] = useState(null);
     const [pause, setPause] = useState(false);
     const [currentCards, setCurrentCards] = useState([]);
     const [hasConfirmedHand, setHasConfirmedHand] = useState(null);
-    const [trickStarterUsername, setTrickStarterUsername] = useState("");
+    const [currentTrick, setCurrentTrick] = useState(null);
 
     let { roomName } = useParams();
 
@@ -76,6 +79,11 @@ export const Room = ({ location }) => {
                 setPause(paused);
             });
 
+            subscribeRoomState((err, roomState_) => {
+                if (err) return;
+                setRoomState(roomState_);
+            });
+
             subscribeUpdatePlayerCards((err, cards) => {
                 if (err) return;
                 setCurrentCards(cards);
@@ -86,9 +94,9 @@ export const Room = ({ location }) => {
                 setHasConfirmedHand(false);
             });
 
-            subscribeAnnounceStartingPlayer((err, username) => {
+            subscribeAskCard((err, trick) => {
                 if (err) return;
-                setTrickStarterUsername(username);
+                setCurrentTrick(trick);
             });
 
             return () => {
@@ -110,9 +118,11 @@ export const Room = ({ location }) => {
                 <div>
                     Player list:
                     <PlayerList
+                        myUsername={location.state.username}
                         players={players}
+                        roomState={roomState}
                         currentCards={currentCards}
-                        trickStarterUsername={trickStarterUsername}
+                        currentTrick={currentTrick}
                         pause={pause} />
                 </div>
 
