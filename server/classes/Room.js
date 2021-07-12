@@ -102,10 +102,23 @@ class Room {
                 this.startState(Constants.ROOM_STATES.TRICK_PLAY);
                 break;
             case Constants.ROOM_STATES.TRICK_PLAY:
-                this.ClientAPI.askCard();
-                break;
             case Constants.ROOM_STATES.TRICK_PENDING:
                 this.ClientAPI.askCard();
+                break;
+            case Constants.ROOM_STATES.TRICK_END:
+                let winningPlayerId = this.currentTrick.determineWinner();
+                let winningPlayer = Object.values(this.players).filter(player => player.playerId === winningPlayerId)[0];
+                let newCollectedCards = this.currentTrick.collectCards();
+                winningPlayer.collectedCards = winningPlayer.collectedCards.concat(newCollectedCards);
+                this.ClientAPI.updatePlayerList();
+
+                if (winningPlayer.currentHand.length) {
+                    this.currentTrick = new Trick(winningPlayerId);
+                    this.startState(Constants.ROOM_STATES.TRICK_PLAY);
+                } else {
+                    this.currentTrick = undefined;
+                    this.startState(Constants.ROOM_STATES.ROUND_END);
+                }
                 break;
             default:
         }
@@ -113,6 +126,7 @@ class Room {
 
     addPlayer(socket, username) {
         this.players[username] = new Player(socket, username);
+        console.log(username, this.players[username].playerId);
         this.ClientAPI.updatePlayerList();
     }
 
@@ -271,9 +285,11 @@ class ClientAPI {
                 currentTeam: playerObj.currentTeam,
                 nextPlayerUsername: playerObj.nextPlayer ? playerObj.nextPlayer.username : "",
                 hasConfirmedHand: playerObj.hasConfirmedHand,
-                numFaceDown: playerObj.numFaceDown
+                numFaceDown: playerObj.numFaceDown,
+                collectedCards: playerObj.collectedCards
             }
         });
+        
         this.room.io.to(this.room.roomName).emit(Constants.CLIENT_API.UPDATE_PLAYER_LIST, playerObjects);
     }
 

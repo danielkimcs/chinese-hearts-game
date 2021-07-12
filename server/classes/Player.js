@@ -10,10 +10,10 @@ class Player {
 
         this.currentTeam = "";
         this.nextPlayer = undefined;
+        this.hasConfirmedHand = false;
         
         this.currentHand = [];
-        this.numFaceDown = 0;
-        this.hasConfirmedHand = false;
+        this.numFaceDown = 0; // TO DO: update this count when a player plays a face down card!
         this.collectedCards = [];
     }
 

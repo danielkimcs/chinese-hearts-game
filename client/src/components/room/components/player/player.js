@@ -6,7 +6,7 @@ const teamColors = {
     [Constants.TEAM_TYPE.TEAM_B]: "blue",
 }
 
-export const Player = ({ username, status, currentTeam, numFaceDown, showConfirmedTag, currentTurn, playedCard }) => {
+export const Player = ({ username, status, currentTeam, numFaceDown, showConfirmedTag, currentTurn, playedCard, collectedCards }) => {
     return (
         <div className="player-container">
             <p style={{
@@ -17,7 +17,8 @@ export const Player = ({ username, status, currentTeam, numFaceDown, showConfirm
                 {numFaceDown ? numFaceDown + " cards face down" : null}
                 {showConfirmedTag ? "CONFIRMED" : null}
                 {currentTurn ? "<- CURRENT TURN" : null}
-                {playedCard ? playedCard.suit + " " + playedCard.rank : null}
+                {playedCard ? playedCard.suit + " " + playedCard.rank + " " + (playedCard.faceDown ? 'F' : '') : null}
+                {collectedCards.map(card => <span key={card.suit+card.rank}>{card.suit} {card.rank} {card.faceDown ? 'F' : null} </span>)}
             </p>
         </div>
     );
