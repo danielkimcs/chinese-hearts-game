@@ -3,25 +3,30 @@ import { useHistory } from 'react-router-dom';
 
 const USERNAME_REGEX = /^[a-z0-9]+$/i;
 
+const verifyInput = (input) => {
+    if (input.length === 0) return false;
+    let isInputValid = input.match(USERNAME_REGEX) != null;
+    return isInputValid;
+}
+
 export const Home = () => {
     const [username, setUsername] = useState("");
     const [room, setRoom] = useState("");
     const history = useHistory();
 
-    const verifyName = (username) => {
-        if (username.length === 0) return false;
-        let isNameValid = username.match(USERNAME_REGEX) != null;
-        return isNameValid;
-    }
-
     const handleSubmit = (event) => {
         event.preventDefault();
-        if (verifyName(username)) {
-            history.push("/games/"+room, { username });
-        } else {
+        if (!verifyInput(username)) {
             alert("Invalid username!");
+            return;
         }
+        if (!verifyInput(room)) {
+            alert("Invalid game ID!");
+            return;
+        }
+        history.push("/games/" + room, { username });
     }
+    
     return (
         <div className="home-container">
             <form onSubmit={handleSubmit}>
