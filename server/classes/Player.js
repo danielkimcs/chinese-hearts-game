@@ -30,6 +30,8 @@ class Player {
 
         let returnCard = this.currentHand[returnCardIndex];
         this.currentHand.splice(returnCardIndex, 1);
+        if (returnCard.faceDown) this.numFaceDown--;
+        
         return returnCard;
     }
 }

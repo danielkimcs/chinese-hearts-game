@@ -199,6 +199,7 @@ io.on('connection', socket => {
 
         let actualCard = currentPlayer.removeCard(card);
         room.ClientAPI.updatePlayerCards(currentPlayer);
+        room.ClientAPI.updatePlayerList();
 
         let currentTrick = room.currentTrick;
         currentTrick.playedCards[currentPlayer.playerId] = actualCard;

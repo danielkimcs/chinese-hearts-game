@@ -123,6 +123,7 @@ export const Room = ({ location }) => {
                         roomState={roomState}
                         currentCards={currentCards}
                         currentTrick={currentTrick}
+                        hasConfirmedHand={hasConfirmedHand}
                         pause={pause} />
                 </div>
 

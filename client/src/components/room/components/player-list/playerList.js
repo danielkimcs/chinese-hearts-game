@@ -11,7 +11,7 @@ const isLegalMove = (currentTrick, currentHand, playedCard) => {
     return !currentHand.filter(card => card.suit === currentTrick.leadingSuit).length;
 }
 
-export const PlayerList = ({ myUsername, players, roomState, currentCards, currentTrick, pause }) => {
+export const PlayerList = ({ myUsername, players, roomState, currentCards, currentTrick, hasConfirmedHand, pause }) => {
     const renderPlayerList = () => {
         let teamPlayers = players.filter(player =>
             player.currentTeam.length > 0
@@ -79,7 +79,7 @@ export const PlayerList = ({ myUsername, players, roomState, currentCards, curre
                 <ul>
                     {currentCards.sort(compareCards).map(card =>
                         <li key={`${card.suit}${card.rank}`}>
-                            {roomState === Constants.ROOM_STATES.ROUND_CONFIRM ?
+                            {roomState === Constants.ROOM_STATES.ROUND_CONFIRM && !hasConfirmedHand ?
                                 <button onClick={() => setFaceDown(card)} >
                                     {card.suit} {card.rank} {isSpecialCard(card) ? "!" : null}
                                 </button>
