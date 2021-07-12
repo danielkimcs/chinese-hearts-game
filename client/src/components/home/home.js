@@ -29,20 +29,22 @@ export const Home = () => {
 
     return (
         <div className="container mx-auto">
-            <div className="width-1/3 mx-auto">
-                <form onSubmit={handleSubmit}>
-                    <label>
-                        Username:
-                        <input className="border" type="text" value={username} onChange={e => setUsername(e.target.value)} />
-                    </label>
-                    <br />
-                    <label>
-                        Game ID:
+            <form onSubmit={handleSubmit}>
+                <div className="w-1/2 mx-auto mt-12 flex flex-col">
+                    <article className="prose text-center">
+                        <h2>Chinese Hearts</h2>
+                    </article>
+                    <div className="my-3 mx-auto">
+                        <span className="block text-sm text-gray-500">Enter username</span>
+                        <input type="text" value={username} onChange={e => setUsername(e.target.value)} />
+                    </div>
+                    <div className="my-3 mx-auto">
+                        <span className="block text-sm text-gray-500">Enter game ID</span>
                         <input type="text" value={room} onChange={e => setRoom(e.target.value)} />
-                    </label>
-                    <input type="submit" value="Join!" />
-                </form>
-            </div>
+                    </div>
+                    <button className="w-24 mx-auto py-2 px-4 bg-green-400 text-white font-semibold rounded-lg shadow-md hover:bg-white hover:text-green-400 focus:outline-none" type="submit">Join!</button>
+                </div>
+            </form>
         </div>
     );
 }

@@ -22,6 +22,7 @@
   "homepage": "https://github.com/danielkimcs/chinese-hearts-game#readme",
   "dependencies": {
     "@tailwindcss/forms": "^0.3.3",
+    "@tailwindcss/typography": "^0.4.1",
     "connect-history-api-fallback": "^1.6.0",
     "express": "^4.17.1",
     "nodemon": "^2.0.9",
