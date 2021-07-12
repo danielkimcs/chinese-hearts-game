@@ -24,9 +24,10 @@ export const PlayerList = ({ myUsername, players, roomState, currentCards, curre
             let usernameToPlayerObj = {};
             teamPlayers.forEach(playerObj => usernameToPlayerObj[playerObj.username] = playerObj);
 
-            let sortedTeamPlayers = [teamPlayers[0]];
-            let currentPlayerUsername = teamPlayers[0].nextPlayerUsername;
-            while (currentPlayerUsername.localeCompare(teamPlayers[0].username) !== 0) {
+            let myPlayerObj = teamPlayers.filter(player => player.username === myUsername)[0];
+            let sortedTeamPlayers = [myPlayerObj];
+            let currentPlayerUsername = sortedTeamPlayers[0].nextPlayerUsername;
+            while (currentPlayerUsername.localeCompare(sortedTeamPlayers[0].username) !== 0) {
                 let currentPlayerObj = usernameToPlayerObj[currentPlayerUsername];
                 sortedTeamPlayers.push(currentPlayerObj);
                 currentPlayerUsername = currentPlayerObj.nextPlayerUsername;
