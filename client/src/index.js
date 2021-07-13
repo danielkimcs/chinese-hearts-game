@@ -4,14 +4,19 @@ import './index-base.css';
 import './index-components.css';
 import './index-utilities.css';
 import App from './App';
+import { downloadAssets } from './shared/assets';
 import reportWebVitals from './reportWebVitals';
 
-ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById('root')
-);
+Promise.all([
+  downloadAssets(),
+]).then(() => {
+  ReactDOM.render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>,
+    document.getElementById('root')
+  );
+});
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))

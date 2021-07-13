@@ -23,7 +23,6 @@ const PlayerUsernameTag = ({ username, textAlign }) => {
 }
 
 const FaceDownCardContainer = ({ numFaceDown }) => {
-
     return (
         <div className="col-span-1 relative overflow-y-hidden">
             {numFaceDown > 0 ? [...Array(numFaceDown)].map((ignore, index) => {

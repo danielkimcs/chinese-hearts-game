@@ -48,7 +48,7 @@ module.exports = {
                 ],
             },
             {
-                test: /\.(png|jpg|gif)$/i,
+                test: /\.(png|jpg|gif|svg)$/i,
                 exclude: /node_modules/,
                 use: {
                     loader: "url-loader",
@@ -65,7 +65,13 @@ module.exports = {
                 options: {
                     name: "static/media/[name].[hash:8].[ext]"
                 }
-            }
+            },
+            // {
+            //     test: /\.svg/,
+            //     use: {
+            //         loader: 'svg-url-loader'
+            //     }
+            // },
         ]
     },
     // devServer: {
