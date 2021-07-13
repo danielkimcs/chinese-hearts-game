@@ -13,6 +13,14 @@ const isLegalMove = (currentTrick, currentHand, playedCard) => {
     return !currentHand.filter(card => card.suit === currentTrick.leadingSuit).length;
 }
 
+const compareCards = (card1, card2) => {
+    if (card1.suit !== card2.suit) {
+        return Constants.CARD_TYPE.SUITS[card2.suit] - Constants.CARD_TYPE.SUITS[card1.suit];
+    } else {
+        return Constants.CARD_TYPE.RANKS[card2.rank] - Constants.CARD_TYPE.RANKS[card1.rank];
+    }
+}
+
 export const PlayerList = ({ myUsername, players, roomState, currentCards, currentTrick, hasConfirmedHand, pause, startingCountdown }) => {
     const isLegalMoveWrapper = (playedCard) => {
         if (playedCard == null) return false;
@@ -41,14 +49,6 @@ export const PlayerList = ({ myUsername, players, roomState, currentCards, curre
             }
 
             return sortedTeamPlayers;
-        }
-    }
-
-    const compareCards = (card1, card2) => {
-        if (card1.suit !== card2.suit) {
-            return Constants.CARD_TYPE.SUITS[card2.suit] - Constants.CARD_TYPE.SUITS[card1.suit];
-        } else {
-            return Constants.CARD_TYPE.RANKS[card2.rank] - Constants.CARD_TYPE.RANKS[card1.rank];
         }
     }
 

@@ -19,11 +19,11 @@ const PlayerStatusTag = ({ showConfirmedTag, currentTurn }) => {
     return (
         <>
             {showConfirmedTag ?
-                <svg class="h-full w-6 text-green-500 " fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="h-full w-6 text-green-500 " fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                 </svg>
                 : (currentTurn ?
-                    <svg class="h-full w-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="h-full w-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
                     </svg> : null)}
         </>
@@ -92,9 +92,28 @@ const PlayedCardComponent = ({ playedCard }) => {
         <div className="h-20 w-16 mx-auto relative">
             {playedCard ? <>
                 {playedCard.faceDown ?
-                    <div class="absolute top-0 -right-2"><span class="text-red-500 font-bold">x2</span></div> : null}
+                    <div className="absolute top-0 -right-2"><span className="text-red-500 font-bold">x2</span></div> : null}
                 {getCardImage(playedCard.rank, playedCard.suit)}
             </> : null}
+        </div>
+    );
+}
+
+const CollectedCardsComponent = ({ collectedCards }) => {
+    let sortedCollectedCards = collectedCards.sort((card1, card2) => {
+        if (card1.suit !== card2.suit) {
+            return Constants.CARD_TYPE.SUITS[card2.suit] - Constants.CARD_TYPE.SUITS[card1.suit];
+        } else {
+            return Constants.CARD_TYPE.RANKS[card2.rank] - Constants.CARD_TYPE.RANKS[card1.rank];
+        }
+    });
+    return (
+        <div className="col-span-1 relative overflow-y-hidden">
+            {sortedCollectedCards.map((card, index) =>
+                <div className={`h-20 w-12 ${index !== 0 ? 'absolute top-0' : ''}`} style={{ marginLeft: `${index}rem` }}>
+                    {getCardImage(card.rank, card.suit)}
+                </div>
+            )}
         </div>
     );
 }
@@ -114,13 +133,13 @@ export const Player = ({
     isLegalMoveWrapper,
     playCard
 }) => {
+
     return (
         <>
             {!currentTeam.length ?
                 <div className="font-sans truncate font-light text-center text-gray-800 bg-gray-200 px-3 py-2 m-2">
                     {username}
                 </div>
-                // TO DO: style Player component when player is actually playing in teams with cards (below)
                 : <>
                     {playerPosition[index] === 'RIGHT' || playerPosition[index] === 'BOTTOM' ?
                         <div className={`${playerPosition[index] === 'RIGHT' ? 'col-span-1' : 'col-span-4 h-32 ' + (pushUpBottom ? '-mt-16' : '')}`}>
@@ -128,8 +147,7 @@ export const Player = ({
                         </div> : null}
                     <div
                         className={`${playerPosition[index] === 'TOP' || playerPosition[index] === 'BOTTOM' ? 'col-span-4 mb-4'
-                            : ((collectedCards.length ? 'h-48' : 'h-24') + ' col-span-1 pt-1')}
-                            ${playerPosition[index] !== 'TOP'}`}>
+                            : ((collectedCards.length ? 'h-48' : 'h-24') + ' col-span-1 pt-1')}`}>
                         {playerPosition[index] === 'TOP' ?
                             <div className={`pt-1 mx-auto w-96 ${collectedCards.length ? 'h-48' : 'h-24'}`}>
                                 <div className="flex flex-col px-1">
@@ -138,7 +156,7 @@ export const Player = ({
                                         <FaceDownCardContainer numFaceDown={numFaceDown} />
                                     </div>
                                 </div>
-                                {/* Collected cards here */}
+                                {collectedCards.length ? <CollectedCardsComponent collectedCards={collectedCards} /> : null}
                             </div>
                             : <>
                                 <div className="w-full flex flex-col px-1">
@@ -152,7 +170,7 @@ export const Player = ({
                                         </>}
                                     </div>
                                 </div>
-                                {/* Collected cards here */}
+                                {collectedCards.length ? <CollectedCardsComponent collectedCards={collectedCards} /> : null}
                             </>
                         }
                     </div>
