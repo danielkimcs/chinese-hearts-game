@@ -89,6 +89,8 @@ export const Room = ({ location }) => {
     const renderGameMessage = () => {
         if (roomState === Constants.ROOM_STATES.ROUND_CONFIRM) {
             return "Waiting for players to place any special cards face down and confirm their hand...";
+        } else if (roomState === Constants.ROOM_STATES.ROUND_END) {
+            return "The round has ended!";
         } else if (currentTrick && players) {
             let currentTurnPlayer = players.filter(player => player.playerId === currentTrick.currentTurnPlayerId)[0];
             let currentTurnPlayerName = currentTurnPlayer ? currentTurnPlayer.username : null;
@@ -99,7 +101,7 @@ export const Room = ({ location }) => {
                     return `Waiting for ${currentTurnPlayerName} to play a card...`;
                 }
             } else if (roomState === Constants.ROOM_STATES.TRICK_END && currentTrick.winnerPlayerName) {
-                return `${currentTrick.winnerPlayerName} has won this trick! Starting next trick...`;
+                return `${currentTrick.winnerPlayerName} has won this trick! ${currentCards.length ? 'Starting next trick...' : 'Calculating points...'}`;
             }
         }
     }

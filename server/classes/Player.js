@@ -9,10 +9,10 @@ class Player {
         this.status = Constants.PLAYER_STATUS.PLAYER_CONNECTED;
 
         this.currentTeam = "";
+        this.nextPlayer = undefined;
         this.points = 0;
         this.pointsOutdated = false;
 
-        this.nextPlayer = undefined;
         this.hasConfirmedHand = false;
         this.currentHand = [];
         this.numFaceDown = 0;

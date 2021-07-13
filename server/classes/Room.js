@@ -5,6 +5,7 @@ const Card = require('./Card');
 const Trick = require('./Trick');
 
 const COUNTDOWN_INTERVAL_TIME = 300;
+const DEVELOPMENT_MODE = true;
 
 const SUITS = Object.keys(Constants.CARD_TYPE.SUITS);
 const RANKS = Object.keys(Constants.CARD_TYPE.RANKS);
@@ -13,9 +14,9 @@ function createShuffledDeck() {
     let deck = [];
     SUITS.forEach(suit => RANKS.forEach(rank => deck.push(new Card(rank, suit))));
     deck = Utility.shuffleArray(deck);
+    if (DEVELOPMENT_MODE) return deck.slice(0, Math.ceil(deck.length / 13)); // Just play one trick for development purposes
     return deck;
 }
-
 
 class Room {
     constructor(io, roomName) {
@@ -82,8 +83,15 @@ class Room {
                 this.startState(Constants.ROOM_STATES.ROUND_DEAL);
                 break;
             case Constants.ROOM_STATES.ROUND_DEAL:
+                let roundPlayers = this.getConnectedPlayers();
+
+                // Clear collected cards from last round
+                roundPlayers.forEach(player => {
+                    player.collectedCards = [];
+                });
+
                 let shuffledDeck = createShuffledDeck();
-                this.getConnectedPlayers().forEach((player, index) => {
+                roundPlayers.forEach((player, index) => {
                     player.currentHand = shuffledDeck.slice(index * shuffledDeck.length / 4, (index + 1) * shuffledDeck.length / 4);
                     this.ClientAPI.updatePlayerCards(player);
                 });
@@ -133,6 +141,9 @@ class Room {
                         } else {
                             thisRoom.currentTrick = undefined;
                             thisRoom.trickEndTimeoutStarted = false;
+                            thisRoom.getConnectedPlayers().forEach(player => {
+                                player.pointsOutdated = true;
+                            });
                             thisRoom.startState(Constants.ROOM_STATES.ROUND_END);
                         }
                     }, 2500);
@@ -141,18 +152,20 @@ class Room {
             case Constants.ROOM_STATES.ROUND_END:
                 this.ClientAPI.updateCurrentTrick(); // clears the table from last trick
                 this.getConnectedPlayers().forEach(player => {
-                    player.points += player.calculatePoints(this.doubleHeartPoints);
+                    if (player.pointsOutdated) {
+                        player.points += player.calculatePoints(this.doubleHeartPoints);
 
-                    // Reset everything
-                    // player.collectedCards = [];
-                    this.nextPlayer = undefined;
-                    this.hasConfirmedHand = false;
-                    this.currentHand = [];
-                    this.numFaceDown = 0;
-                    player.pointsOutdated = false;
+                        // Reset everything
+                        player.hasConfirmedHand = false;
+                        player.currentHand = [];
+                        player.numFaceDown = 0;
+                        player.pointsOutdated = false;
+                    }
                 });
                 this.doubleHeartPoints = false;
                 this.ClientAPI.updatePlayerList();
+
+                
                 break;
             default:
         }
