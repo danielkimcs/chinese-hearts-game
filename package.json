@@ -9,6 +9,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "heroku-prebuild": "npm install --dev",
     "dev": "NODE_ENV=development nodemon server/server.js",
     "build": "webpack --config webpack.prod.js",
     "start": "node server/server.js"
