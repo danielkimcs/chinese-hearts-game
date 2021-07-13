@@ -42,7 +42,7 @@ export const Home = () => {
                         <span className="block text-sm text-gray-500">Enter game ID</span>
                         <input type="text" value={room} onChange={e => setRoom(e.target.value)} />
                     </div>
-                    <button className="w-24 mx-auto py-2 px-4 bg-green-400 text-white font-semibold rounded-lg shadow-md hover:bg-white hover:text-green-400 focus:outline-none" type="submit">Join!</button>
+                    <button className="w-24 mx-auto py-2 px-4 bg-green-400 text-white font-semibold shadow-md hover:bg-white hover:text-green-400 focus:outline-none" type="submit">Join!</button>
                 </div>
             </form>
         </div>

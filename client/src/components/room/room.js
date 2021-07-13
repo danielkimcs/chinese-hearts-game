@@ -13,6 +13,7 @@ import {
     subscribeAnnounceStartingPlayer,
     subscribeAskCard
 } from '../../utility/networking';
+import Spinner from '../../shared/spinner';
 import { useParams, Redirect } from "react-router-dom";
 import PlayerList from './components/player-list';
 
@@ -38,7 +39,7 @@ export const Room = ({ location }) => {
         message: ""
     });
     const [players, setPlayers] = useState([]);
-    const [roomState, setRoomState] = useState("");
+    const [roomState, setRoomState] = useState(Constants.ROOM_STATES.ROOM_PENDING);
     const [startingCountdown, setStartingCountdown] = useState(null);
     const [pause, setPause] = useState(false);
     const [currentCards, setCurrentCards] = useState([]);
@@ -112,11 +113,9 @@ export const Room = ({ location }) => {
     return (
         <div className="room-container">
             {displayStatus.status === displayStatusValues.JOIN_SUCCESS ? <>
-                <div>Game ID: {roomName}</div>
-                <div>Username: {location.state.username}</div>
-
+                {/* <div>Game ID: {roomName}</div>
+                <div>Username: {location.state.username}</div> */}
                 <div>
-                    Player list:
                     <PlayerList
                         myUsername={location.state.username}
                         players={players}
@@ -124,11 +123,8 @@ export const Room = ({ location }) => {
                         currentCards={currentCards}
                         currentTrick={currentTrick}
                         hasConfirmedHand={hasConfirmedHand}
-                        pause={pause} />
-                </div>
-
-                <div>
-                    {startingCountdown ? startingCountdown : null}
+                        pause={pause}
+                        startingCountdown={startingCountdown} />
                 </div>
 
                 <div>
@@ -140,7 +136,9 @@ export const Room = ({ location }) => {
                 </div>
             </> : (displayStatus.status === displayStatusValues.JOIN_FAILURE ? <>
                 <p>{displayStatus.message} {displayMessageValues[displayStatus.message]} <button onClick={() => history.push("/")}>Go back home</button></p>
-            </> : <p>Loading...</p>)}
+            </> : <div className="w-full flex h-screen m-auto">
+                <Spinner />
+            </div>)}
         </div>
     );
 }

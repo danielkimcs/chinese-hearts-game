@@ -4,7 +4,7 @@ const Player = require('./Player');
 const Card = require('./Card');
 const Trick = require('./Trick');
 
-const COUNTDOWN_INTERVAL_TIME = 100;
+const COUNTDOWN_INTERVAL_TIME = 300;
 
 const SUITS = Object.keys(Constants.CARD_TYPE.SUITS);
 const RANKS = Object.keys(Constants.CARD_TYPE.RANKS);
