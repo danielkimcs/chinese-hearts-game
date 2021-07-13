@@ -57,9 +57,9 @@ export const Room = ({ location }) => {
             let currentTurnPlayerName = currentTurnPlayer ? currentTurnPlayer.username : null;
             if (currentTurnPlayerName) {
                 if (roomState === Constants.ROOM_STATES.TRICK_PLAY) {
-                    return `Waiting for ${currentTurnPlayerName} to start the trick!`;
+                    return `${currentTurnPlayerName} is starting the trick!`;
                 } else if (roomState === Constants.ROOM_STATES.TRICK_PENDING) {
-                    return `Waiting for ${currentTurnPlayerName} to play a card!`;
+                    return `Waiting for ${currentTurnPlayerName} to play a card...`;
                 }
             } else if (roomState === Constants.ROOM_STATES.TRICK_END) {
                 return `Everyone has played their card! Starting next trick...`;
@@ -141,7 +141,11 @@ export const Room = ({ location }) => {
                 </div> : null}
             {displayStatus.status === displayStatusValues.JOIN_SUCCESS ? <>
                 <div className="absolute top-0 left-0">
-                    {renderGameMessage()}
+                    <div class="w-80 h-24 p-2 flex">
+                        <div class="m-auto font-semibold text-lg break-normal text-center">
+                            {renderGameMessage()}
+                        </div>
+                    </div>
                 </div>
                 <div>
                     <PlayerList

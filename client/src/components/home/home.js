@@ -11,17 +11,18 @@ const verifyInput = (input) => {
 
 export const Home = () => {
     const [username, setUsername] = useState("");
+    const [usernameInvalid, setUsernameInvalid] = useState(false);
+    const [roomInvalid, setRoomInvalid] = useState(false);
     const [room, setRoom] = useState("");
     const history = useHistory();
 
     const handleSubmit = (event) => {
         event.preventDefault();
-        if (!verifyInput(username)) {
-            alert("Invalid username!");
-            return;
-        }
-        if (!verifyInput(room)) {
-            alert("Invalid game ID!");
+        let enteredInvalidUsername = !verifyInput(username);
+        let enteredInvalidRoom = !verifyInput(room);
+        if (enteredInvalidUsername || enteredInvalidRoom) {
+            setUsernameInvalid(enteredInvalidUsername);
+            setRoomInvalid(enteredInvalidRoom);
             return;
         }
         history.push("/games/" + room, { username });
@@ -36,13 +37,19 @@ export const Home = () => {
                             Chinese Hearts
                         </span>
                     </div>
-                    <div className="my-3 mx-auto">
+                    <div className="my-3 mx-auto w-64">
                         <span className="block text-sm text-gray-500">Enter username</span>
-                        <input type="text" value={username} onChange={e => setUsername(e.target.value)} />
+                        <input className="w-full" type="text" value={username} onChange={e => setUsername(e.target.value)} />
+                        {usernameInvalid ? <span class="block text-sm text-gray-500 w-full break-normal text-red-400">
+                            Username must contain only letters and/or numbers!
+                        </span> : null}
                     </div>
-                    <div className="my-3 mx-auto">
+                    <div className="my-3 mx-auto w-64">
                         <span className="block text-sm text-gray-500">Enter game ID</span>
-                        <input type="text" value={room} onChange={e => setRoom(e.target.value)} />
+                        <input className="w-full" type="text" value={room} onChange={e => setRoom(e.target.value)} />
+                        {roomInvalid ? <span class="block text-sm text-gray-500 w-full break-normal text-red-400">
+                            Game ID must contain only letters and/or numbers!
+                        </span> : null}
                     </div>
                     <button className="w-24 mx-auto py-2 px-4 bg-green-400 text-white font-semibold shadow-md hover:bg-white hover:text-green-400 focus:outline-none" type="submit">Join!</button>
                 </div>
