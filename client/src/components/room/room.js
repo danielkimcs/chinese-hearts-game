@@ -134,7 +134,11 @@ export const Room = ({ location }) => {
                 </div>
 
                 <div>
-                    {hasConfirmedHand === false ? <button onClick={confirmHand}>CONFIRM HAND</button> : null}
+                    {hasConfirmedHand === false ? <div class="w-full flex mt-16">
+                        <div class="mx-auto">
+                            <button class="w-auto mx-auto py-2 px-4 bg-green-400 text-white font-semibold shadow-md hover:bg-white hover:text-green-400 focus:outline-none" onClick={confirmHand}>CONFIRM HAND</button>
+                        </div>
+                    </div> : null}
                 </div>
 
 
