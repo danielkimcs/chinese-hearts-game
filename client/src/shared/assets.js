@@ -133,7 +133,6 @@ function downloadAsset(assetName) {
     return new Promise(resolve => {
         const asset = new Image();
         asset.onload = () => {
-            console.log(`Downloaded ${assetName}`);
             assets[assetName] = asset;
             resolve();
         };

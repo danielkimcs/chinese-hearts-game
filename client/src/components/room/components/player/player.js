@@ -92,7 +92,7 @@ const PlayedCardComponent = ({ playedCard }) => {
         <div className="h-20 w-16 mx-auto relative">
             {playedCard ? <>
                 {playedCard.faceDown ?
-                    <div className="absolute top-0 -right-2"><span className="text-red-500 font-bold">x2</span></div> : null}
+                    <div className="absolute -top-3 -right-2"><span className="text-red-600 font-bold">x2</span></div> : null}
                 {getCardImage(playedCard.rank, playedCard.suit)}
             </> : null}
         </div>
@@ -108,9 +108,10 @@ const CollectedCardsComponent = ({ collectedCards }) => {
         }
     });
     return (
-        <div className="col-span-1 relative overflow-y-hidden">
+        <div className="col-span-1 relative mt-5">
             {sortedCollectedCards.map((card, index) =>
-                <div className={`h-20 w-12 ${index !== 0 ? 'absolute top-0' : ''}`} style={{ marginLeft: `${index}rem` }}>
+                <div className={`h-20 w-12 absolute top-0 ${card.faceDown ? '-mt-2' : ''}`} style={{ marginLeft: `${index}rem` }}>
+                    {card.faceDown ? <div class="absolute -top-5 -rotate-45"><span class="text-red-600 font-bold text-xs">x2</span></div> : null}
                     {getCardImage(card.rank, card.suit)}
                 </div>
             )}
