@@ -4,8 +4,9 @@ const Player = require('./Player');
 const Card = require('./Card');
 const Trick = require('./Trick');
 
-const COUNTDOWN_INTERVAL_TIME = 300;
-const DEVELOPMENT_MODE = true;
+const COUNTDOWN_INTERVAL_TIME = 1000;
+const ROUND_END_DELAY = 2500;
+const DEVELOPMENT_MODE = false;
 
 const SUITS = Object.keys(Constants.CARD_TYPE.SUITS);
 const RANKS = Object.keys(Constants.CARD_TYPE.RANKS);
@@ -146,7 +147,7 @@ class Room {
                             });
                             thisRoom.startState(Constants.ROOM_STATES.ROUND_END);
                         }
-                    }, 2500);
+                    }, ROUND_END_DELAY);
                 }
                 break;
             case Constants.ROOM_STATES.ROUND_END:
@@ -341,7 +342,6 @@ class ClientAPI {
                 points: playerObj.points,
             }
         });
-        console.log(playerObjects);
         this.room.io.to(this.room.roomName).emit(Constants.CLIENT_API.UPDATE_PLAYER_LIST, playerObjects);
     }
 
