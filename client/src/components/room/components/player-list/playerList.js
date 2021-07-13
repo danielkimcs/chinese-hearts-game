@@ -98,7 +98,9 @@ export const PlayerList = ({ myUsername, players, roomState, currentCards, curre
                             key={player.username}
                             {...player}
                             index={index}
-                            showConfirmedTag={player.hasConfirmedHand && roomState === Constants.ROOM_STATES.ROUND_CONFIRM}
+                            showConfirmedTag={
+                                (player.hasConfirmedHand && roomState === Constants.ROOM_STATES.ROUND_CONFIRM)
+                                || (player.hasConfirmedStartRound && roomState === Constants.ROOM_STATES.ROUND_END)}
                             currentTurn={currentTrick && currentTrick.currentTurnPlayerId === player.playerId}
                             playedCard={currentTrick && player.playerId in currentTrick.playedCards ? currentTrick.playedCards[player.playerId] : null}
                             pushUpBottom={playerListOrdered[1].collectedCards.length || playerListOrdered[2].collectedCards.length}

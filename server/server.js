@@ -188,6 +188,26 @@ io.on('connection', socket => {
         }
     });
 
+    socket.on(Constants.SERVER_EVENTS.START_NEW_ROUND_CONFIRMED, () => {
+        if (!currentPlayerUsername || !currentPlayerRoomName || !currentPlayerJoined) return;
+        let room = rooms[currentPlayerRoomName];
+        if (room.currentState !== Constants.ROOM_STATES.ROUND_END) return;
+        if (room.gamePaused) return;
+
+        let currentPlayer = room.players[currentPlayerUsername];
+        currentPlayer.hasConfirmedStartRound = true;
+
+        room.ClientAPI.updatePlayerList();
+
+        // Check if every connected player has confirmed hand
+        let everyoneHasConfirmed = room.getConnectedPlayers()
+            .reduce((confirmedSoFar, nextPlayer) => confirmedSoFar && nextPlayer.hasConfirmedStartRound, true);
+
+        if (everyoneHasConfirmed) {
+            room.startState(Constants.ROOM_STATES.ROUND_DEAL);
+        }
+    });
+
     socket.on(Constants.SERVER_EVENTS.CARD_PLAYED, (card) => {
         if (!currentPlayerUsername || !currentPlayerRoomName || !currentPlayerJoined) return;
 

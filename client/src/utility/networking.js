@@ -36,6 +36,12 @@ export const sendHandConfirmation = () => {
     socket.emit(Constants.SERVER_EVENTS.FACE_DOWN_CONFIRMED);
 }
 
+export const sendNewRoundConfirmation = () => {
+    if (!socket) return true;
+
+    socket.emit(Constants.SERVER_EVENTS.START_NEW_ROUND_CONFIRMED);
+}
+
 export const subscribeUpdatePlayerList = (callback) => {
     if (!socket) return true;
 
@@ -80,6 +86,14 @@ export const subscribeAskConfirmHand = (callback) => {
     if (!socket) return true;
 
     socket.on(Constants.CLIENT_API.ASK_CONFIRM_HAND, () => {
+        return callback(null);
+    });
+}
+
+export const subscribeAskStartRound = (callback) => {
+    if (!socket) return true;
+
+    socket.on(Constants.CLIENT_API.ASK_START_ROUND, () => {
         return callback(null);
     });
 }

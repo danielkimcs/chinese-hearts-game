@@ -14,6 +14,8 @@ class Player {
         this.pointsOutdated = false;
 
         this.hasConfirmedHand = false;
+        this.hasConfirmedStartRound = false;
+        
         this.currentHand = [];
         this.numFaceDown = 0;
         this.collectedCards = [];

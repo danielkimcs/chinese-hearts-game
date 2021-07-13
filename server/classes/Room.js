@@ -157,6 +157,7 @@ class Room {
 
                         // Reset everything
                         player.hasConfirmedHand = false;
+                        player.hasConfirmedStartRound = false;
                         player.currentHand = [];
                         player.numFaceDown = 0;
                         player.pointsOutdated = false;
@@ -165,7 +166,7 @@ class Room {
                 this.doubleHeartPoints = false;
                 this.ClientAPI.updatePlayerList();
 
-                
+                this.ClientAPI.askStartRound();
                 break;
             default:
         }
@@ -202,6 +203,7 @@ class Room {
             case Constants.ROOM_STATES.TRICK_PLAY:
             case Constants.ROOM_STATES.TRICK_PENDING:
                 this.ClientAPI.updateCurrentTrick();
+            case Constants.ROOM_STATES.ROUND_END:
             case Constants.ROOM_STATES.TRICK_END:
             case Constants.ROOM_STATES.ROUND_DEAL:
             case Constants.ROOM_STATES.ROUND_CONFIRM:
@@ -333,12 +335,13 @@ class ClientAPI {
                 currentTeam: playerObj.currentTeam,
                 nextPlayerUsername: playerObj.nextPlayer ? playerObj.nextPlayer.username : "",
                 hasConfirmedHand: playerObj.hasConfirmedHand,
+                hasConfirmedStartRound: playerObj.hasConfirmedStartRound,
                 numFaceDown: playerObj.numFaceDown,
                 collectedCards: playerObj.collectedCards,
                 points: playerObj.points,
             }
         });
-
+        console.log(playerObjects);
         this.room.io.to(this.room.roomName).emit(Constants.CLIENT_API.UPDATE_PLAYER_LIST, playerObjects);
     }
 
@@ -367,6 +370,11 @@ class ClientAPI {
     askConfirmHand(player = null) {
         let roomDestination = player ? player.socket.id : this.room.roomName;
         this.room.io.in(roomDestination).emit(Constants.CLIENT_API.ASK_CONFIRM_HAND);
+    }
+
+    askStartRound(player = null) {
+        let roomDestination = player ? player.socket.id : this.room.roomName;
+        this.room.io.in(roomDestination).emit(Constants.CLIENT_API.ASK_START_ROUND);
     }
 
     updateCurrentTrick() {

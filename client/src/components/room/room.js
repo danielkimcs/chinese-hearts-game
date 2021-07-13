@@ -4,12 +4,14 @@ import {
     initiateSocket,
     disconnectSocket,
     sendHandConfirmation,
+    sendNewRoundConfirmation,
     subscribeUpdatePlayerList,
     subscribeRoomState,
     subscribeStartingCountdown,
     subscribePause,
     subscribeUpdatePlayerCards,
     subscribeAskConfirmHand,
+    subscribeAskStartRound,
     subscribeAskCard
 } from '../../utility/networking';
 import Spinner from '../../shared/spinner';
@@ -81,6 +83,7 @@ export const Room = ({ location }) => {
     const [pause, setPause] = useState(false);
     const [currentCards, setCurrentCards] = useState([]);
     const [hasConfirmedHand, setHasConfirmedHand] = useState(null);
+    const [confirmedStartRound, setConfirmedStartRound] = useState(null);
     const [currentTrick, setCurrentTrick] = useState(null);
 
     let { roomName } = useParams();
@@ -110,6 +113,12 @@ export const Room = ({ location }) => {
         if (pause) return;
         setHasConfirmedHand(true);
         sendHandConfirmation();
+    }
+
+    const handleConfirmStartRound = () => {
+        if (pause) return;
+        setConfirmedStartRound(true);
+        sendNewRoundConfirmation();
     }
 
     useEffect(() => {
@@ -151,6 +160,11 @@ export const Room = ({ location }) => {
             subscribeAskConfirmHand(err => {
                 if (err) return;
                 setHasConfirmedHand(false);
+            });
+
+            subscribeAskStartRound(err => {
+                if (err) return;
+                setConfirmedStartRound(false);
             });
 
             subscribeAskCard((err, trick) => {
@@ -210,6 +224,12 @@ export const Room = ({ location }) => {
                 {hasConfirmedHand === false ? <div className="w-full flex mt-16">
                     <div className="mx-auto">
                         <button className="w-auto mx-auto py-2 px-4 bg-green-400 text-white font-semibold shadow-md hover:bg-white hover:text-green-400 focus:outline-none" onClick={confirmHand}>CONFIRM HAND</button>
+                    </div>
+                </div> : null}
+
+                {confirmedStartRound === false ? <div className="w-full flex mt-16">
+                    <div className="mx-auto">
+                        <button className="w-auto mx-auto py-2 px-4 bg-green-400 text-white font-semibold shadow-md hover:bg-white hover:text-green-400 focus:outline-none" onClick={handleConfirmStartRound}>START NEW ROUND?</button>
                     </div>
                 </div> : null}
 
