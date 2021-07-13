@@ -30,17 +30,17 @@ const PlayerStatusTag = ({ showConfirmedTag, currentTurn }) => {
     );
 }
 
-const PlayerUsernameTag = ({ username, status, currentTeam, textAlign, showConfirmedTag, currentTurn }) => {
+const PlayerUsernameTag = ({ username, status, currentTeam, textAlign, showConfirmedTag, currentTurn, isBottom }) => {
     return (
         <div className={`col-span-1 xl:col-span-2 flex flex-col justify-center px-2 ${textAlign}`}>
-            <div className="flex flex-row">
+            <div className={`flex flex-row ${!isBottom ? 'bg-gray-200 rounded-xl ' + (textAlign === 'text-left' ? 'pr-2' : 'pl-2') : ''}`}>
                 {textAlign === 'text-left' ?
                     <div className={`inline-block flex-none align-middle mr-2`}>
                         <PlayerStatusTag showConfirmedTag={showConfirmedTag} currentTurn={currentTurn} />
                     </div> : null}
                 <div className="inline-block flex-grow align-middle">
                     <span className={`font-bold text-lg truncate ` + (status === Constants.PLAYER_STATUS.PLAYER_CONNECTED ? teamColors[currentTeam] : disconnectedColor)}>
-                        {username}
+                        {`${isBottom ? 'You: ' : ''}${username}`}
                     </span>
                 </div>
                 {textAlign === 'text-right' ?
@@ -153,7 +153,7 @@ export const Player = ({
                             <div className={`pt-1 mx-auto w-96 ${collectedCards.length ? 'h-48' : 'h-24'}`}>
                                 <div className="flex flex-col px-1">
                                     <div className="grid grid-cols-2 xl:grid-cols-3 my-1">
-                                        <PlayerUsernameTag username={username} status={status} currentTeam={currentTeam} textAlign="text-left" showConfirmedTag={showConfirmedTag} currentTurn={currentTurn} />
+                                        <PlayerUsernameTag username={username} status={status} currentTeam={currentTeam} textAlign="text-left" showConfirmedTag={showConfirmedTag} currentTurn={currentTurn} isBottom={playerPosition[index] === 'BOTTOM'}/>
                                         <FaceDownCardContainer numFaceDown={numFaceDown} />
                                     </div>
                                 </div>
@@ -163,11 +163,11 @@ export const Player = ({
                                 <div className="w-full flex flex-col px-1">
                                     <div className="grid grid-cols-2 xl:grid-cols-3 my-1">
                                         {playerPosition[index] !== 'RIGHT' ? <>
-                                            <PlayerUsernameTag username={username} status={status} currentTeam={currentTeam} textAlign="text-left" showConfirmedTag={showConfirmedTag} currentTurn={currentTurn} />
+                                            <PlayerUsernameTag username={username} status={status} currentTeam={currentTeam} textAlign="text-left" showConfirmedTag={showConfirmedTag} currentTurn={currentTurn} isBottom={playerPosition[index] === 'BOTTOM'} />
                                             <FaceDownCardContainer numFaceDown={numFaceDown} myFaceDownCards={playerPosition[index] === 'BOTTOM' ? myFaceDownCards : null} isLegalMoveWrapper={isLegalMoveWrapper} playCard={playCard} currentTurn={currentTurn} />
                                         </> : <>
                                             <FaceDownCardContainer numFaceDown={numFaceDown} />
-                                            <PlayerUsernameTag username={username} status={status} currentTeam={currentTeam} textAlign="text-right" showConfirmedTag={showConfirmedTag} currentTurn={currentTurn} />
+                                            <PlayerUsernameTag username={username} status={status} currentTeam={currentTeam} textAlign="text-right" showConfirmedTag={showConfirmedTag} currentTurn={currentTurn} isBottom={playerPosition[index] === 'BOTTOM'} />
                                         </>}
                                     </div>
                                 </div>
