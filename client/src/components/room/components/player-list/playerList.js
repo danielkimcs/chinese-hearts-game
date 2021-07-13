@@ -4,14 +4,21 @@ import {
     sendFaceDownCard,
     sendPlayedCard
 } from '../../../../utility/networking';
+import { getCardImage } from '../../../../shared/assets';
 const Constants = require('../../../../../../shared/constants');
 
 const isLegalMove = (currentTrick, currentHand, playedCard) => {
+    if (!currentTrick) return false;
     if (!currentTrick.leadingSuit.length || playedCard.suit === currentTrick.leadingSuit) return true;
     return !currentHand.filter(card => card.suit === currentTrick.leadingSuit).length;
 }
 
 export const PlayerList = ({ myUsername, players, roomState, currentCards, currentTrick, hasConfirmedHand, pause, startingCountdown }) => {
+    const isLegalMoveWrapper = (playedCard) => {
+        if (playedCard == null) return false;
+        return isLegalMove(currentTrick, currentCards, playedCard);
+    }
+
     const renderPlayerList = () => {
         let teamPlayers = players.filter(player =>
             player.currentTeam.length > 0
@@ -58,18 +65,15 @@ export const PlayerList = ({ myUsername, players, roomState, currentCards, curre
     }
 
     const playCard = (card) => {
-        if (isLegalMove(currentTrick, currentCards, card)) {
-            sendPlayedCard(card);
-        } else {
-            alert("NOT legal!");
-        }
+        sendPlayedCard(card);
     }
 
     let renderedPlayerList = renderPlayerList();
     let playerListOrdered = [renderedPlayerList[2], renderedPlayerList[1], renderedPlayerList[3], renderedPlayerList[0]];
+    let sortedCurrentCards = currentCards.sort(compareCards);
 
     return (
-        <div className="player-list-container">
+        <div className="px-8">
             {roomState === Constants.ROOM_STATES.ROOM_PENDING
                 || roomState === Constants.ROOM_STATES.ROOM_COUNTDOWN ?
                 <div className="w-2/3 mx-auto grid justify-items-center p-3 my-2 mt-12">
@@ -88,7 +92,7 @@ export const PlayerList = ({ myUsername, players, roomState, currentCards, curre
                         )}
                     </div>
                 </div>
-                : <div class="grid grid-cols-4">
+                : <div className="grid grid-cols-4">
                     {playerListOrdered.map((player, index) =>
                         <Player
                             key={player.username}
@@ -96,26 +100,49 @@ export const PlayerList = ({ myUsername, players, roomState, currentCards, curre
                             index={index}
                             showConfirmedTag={player.hasConfirmedHand && roomState === Constants.ROOM_STATES.ROUND_CONFIRM}
                             currentTurn={currentTrick && currentTrick.currentTurnPlayerId === player.playerId}
-                            playedCard={currentTrick && player.playerId in currentTrick.playedCards ? currentTrick.playedCards[player.playerId] : null} 
-                            pushUpBottom={playerListOrdered[1].collectedCards.length || playerListOrdered[2].collectedCards.length}/>
+                            playedCard={currentTrick && player.playerId in currentTrick.playedCards ? currentTrick.playedCards[player.playerId] : null}
+                            pushUpBottom={playerListOrdered[1].collectedCards.length || playerListOrdered[2].collectedCards.length}
+                            myFaceDownCards={sortedCurrentCards.filter(card => card.faceDown)}
+                            isLegalMoveWrapper={isLegalMoveWrapper}
+                            playCard={playCard} />
                     )}
                 </div>}
             {currentCards.length ?
-                <ul>
-                    {currentCards.sort(compareCards).map(card =>
-                        <li key={`${card.suit}${card.rank}`}>
-                            {roomState === Constants.ROOM_STATES.ROUND_CONFIRM && !hasConfirmedHand ?
-                                <button onClick={() => setFaceDown(card)} >
-                                    {card.suit} {card.rank} {isSpecialCard(card) ? "!" : null}
-                                </button>
-                                : (currentTrick && currentTrick.currentTurnPlayerId === players.filter(player => player.username === myUsername)[0].playerId ?
-                                    <button onClick={() => playCard(card)} >
-                                        {card.suit} {card.rank}
-                                    </button>
-                                    : <p>{card.suit} {card.rank}</p>)}
-                            {card.faceDown ? "FACE DOWN" : null}
-                        </li>)}
-                </ul> : null}
+                <div className="grid justify-items-center">
+                    <div className="flex flex-row">
+                        {sortedCurrentCards.map((card) => {
+                            if (!card.faceDown && roomState === Constants.ROOM_STATES.ROUND_CONFIRM && !hasConfirmedHand) {
+                                let isSpecial = isSpecialCard(card);
+                                return (
+                                    <div key={`${card.suit}${card.rank}`}
+                                        className={`h-32 w-24 ` + (isSpecial ? 'hover:cursor-pointer' : 'opacity-40')}
+                                        onClick={isSpecial ? () => setFaceDown(card) : undefined}>
+                                        {getCardImage(card.rank, card.suit)}
+                                    </div>
+                                );
+                            } else if (!card.faceDown
+                                && currentTrick
+                                && currentTrick.currentTurnPlayerId === players.filter(player => player.username === myUsername)[0].playerId) {
+                                let isLegal = isLegalMove(currentTrick, currentCards, card);
+                                return (
+                                    <div key={`${card.suit}${card.rank}`}
+                                        className={`h-32 w-24 ` + (isLegal ? 'hover:cursor-pointer' : 'opacity-40')}
+                                        onClick={isLegal ? () => playCard(card) : undefined}>
+                                        {getCardImage(card.rank, card.suit)}
+                                    </div>
+                                );
+                            } else {
+                                if (card.faceDown) return null;
+                                return (
+                                    <div key={`${card.suit}${card.rank}`}
+                                        className={`h-32 w-24 opacity-40`}>
+                                        {getCardImage(card.rank, card.suit)}
+                                    </div>
+                                );
+                            }
+                        })}
+                    </div>
+                </div> : null}
         </div>
     );
 }

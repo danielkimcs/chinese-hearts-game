@@ -142,5 +142,9 @@ function downloadAsset(assetName) {
 }
 
 export const downloadAssets = () => downloadPromise;
-export const getCardImage = (rank, suit) => <img src={assets[(!(rank.length || suit.length) ? 'back'
-    : constantToFileName[suit] + '_' + (constantToFileName[rank] ? constantToFileName[rank] : rank)) + '.svg'].src} />;
+export const getCardImage = (rank = null, suit = null) =>
+    <img
+        src={assets[(!(rank || suit) ? 'back'
+            : constantToFileName[suit] + '_' + (constantToFileName[rank] ? constantToFileName[rank] : rank)) + '.svg'].src}
+        className="mx-auto h-full"
+        draggable={false} />;
