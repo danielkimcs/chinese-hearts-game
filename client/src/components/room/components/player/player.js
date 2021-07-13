@@ -179,12 +179,6 @@ export const Player = ({
                             <PlayedCardComponent playedCard={playedCard} />
                         </div> : null}
                 </>}
-
-            {/* <p style={{
-                }}>
-                    {collectedCards.map(card => <span key={card.suit + card.rank}>{card.suit} {card.rank} {card.faceDown ? 'F' : null} </span>)}
-                </p> */}
-
         </>
     );
 }

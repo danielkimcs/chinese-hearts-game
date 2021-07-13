@@ -111,10 +111,16 @@ export const Room = ({ location }) => {
     }
 
     return (
-        <div className="room-container">
+        <>
+            {pause ?
+                <div class="h-screen absolute top-0 bg-gray-600 bg-opacity-50 w-full z-10 flex">
+                    <div class="w-96 h-48 bg-white mx-auto my-auto p-5 text-center flex">
+                        <div class="mx-auto my-auto">
+                            A player has disconnected! The game is paused until someone takes their place!
+                        </div>
+                    </div>
+                </div> : null}
             {displayStatus.status === displayStatusValues.JOIN_SUCCESS ? <>
-                {/* <div>Game ID: {roomName}</div>
-                <div>Username: {location.state.username}</div> */}
                 <div>
                     <PlayerList
                         myUsername={location.state.username}
@@ -131,14 +137,12 @@ export const Room = ({ location }) => {
                     {hasConfirmedHand === false ? <button onClick={confirmHand}>CONFIRM HAND</button> : null}
                 </div>
 
-                <div>
-                    {pause ? "PAUSED" : null}
-                </div>
+
             </> : (displayStatus.status === displayStatusValues.JOIN_FAILURE ? <>
                 <p>{displayStatus.message} {displayMessageValues[displayStatus.message]} <button onClick={() => history.push("/")}>Go back home</button></p>
             </> : <div className="w-full flex h-screen m-auto">
                 <Spinner />
             </div>)}
-        </div>
+        </>
     );
 }

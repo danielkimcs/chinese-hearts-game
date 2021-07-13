@@ -31,9 +31,11 @@ export const Home = () => {
         <div className="container mx-auto">
             <form onSubmit={handleSubmit}>
                 <div className="w-1/2 mx-auto mt-12 flex flex-col">
-                    <article className="prose text-center">
-                        <h2>Chinese Hearts</h2>
-                    </article>
+                    <div className="mx-auto">
+                        <span class="font-bold text-2xl">
+                            Chinese Hearts
+                        </span>
+                    </div>
                     <div className="my-3 mx-auto">
                         <span className="block text-sm text-gray-500">Enter username</span>
                         <input type="text" value={username} onChange={e => setUsername(e.target.value)} />
