@@ -166,7 +166,14 @@ export const Room = ({ location }) => {
                 </div> : null}
 
             </> : (displayStatus.status === displayStatusValues.JOIN_FAILURE ? <>
-                <p>{displayStatus.message} {displayMessageValues[displayStatus.message]} <button onClick={() => history.push("/")}>Go back home</button></p>
+                <div class="container mx-auto p-24">
+                    <h1 class="text-lg font-bold text-center mb-5">
+                        {displayMessageValues[displayStatus.message]}
+                    </h1>
+                    <div class="w-full text-center">
+                        <button onClick={() => history.push("/")} class="w-28 mx-auto py-2 px-4 bg-red-400 text-white font-semibold shadow-md hover:bg-white hover:text-red-400 focus:outline-none">GO BACK</button>
+                    </div>
+                </div>
             </> : <div className="w-full flex h-screen m-auto">
                 <Spinner />
             </div>)}
