@@ -52,7 +52,27 @@ module.exports = Object.freeze({
             DIAMOND: 2,
             SPADE: 1
         },
-        SPECIAL: ['JACKDIAMOND','QUEENSPADE','10CLUB','ACEHEART']
+        SPECIAL: ['JACKDIAMOND', 'QUEENSPADE', '10CLUB', 'ACEHEART']
+    },
+    CARD_POINTS: {
+        JACKDIAMOND: 100,
+        QUEENSPADE: -100,
+        '10CLUB': 50,
+        HEART: {
+            '2': 0,
+            '3': 0,
+            '4': 0,
+            '5': -10,
+            '6': -10,
+            '7': -10,
+            '8': -10,
+            '9': -10,
+            '10': -10,
+            JACK: -20,
+            QUEEN: -30,
+            KING: -40,
+            ACE: -50
+        }
     },
     ROOM_STATES: {
         ROOM_PENDING: 'ROOM_PENDING',

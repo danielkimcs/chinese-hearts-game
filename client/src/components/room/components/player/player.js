@@ -35,16 +35,16 @@ const PlayerUsernameTag = ({ username, status, currentTeam, textAlign, showConfi
         <div className={`col-span-1 xl:col-span-2 flex flex-col justify-center px-2 ${textAlign}`}>
             <div className={`flex flex-row ${!isBottom ? 'bg-gray-200 rounded-xl ' + (textAlign === 'text-left' ? 'pr-2' : 'pl-2') : ''}`}>
                 {textAlign === 'text-left' ?
-                    <div className={`inline-block flex-none align-middle mr-2`}>
+                    <div className={`inline-block flex-none align-middle mr-2 truncate`}>
                         <PlayerStatusTag showConfirmedTag={showConfirmedTag} currentTurn={currentTurn} />
                     </div> : null}
-                <div className="inline-block flex-grow align-middle">
+                <div className="inline-block flex-grow align-middle truncate">
                     <span className={`font-bold text-lg truncate ` + (status === Constants.PLAYER_STATUS.PLAYER_CONNECTED ? teamColors[currentTeam] : disconnectedColor)}>
                         {`${isBottom ? 'You: ' : ''}${username}`}
                     </span>
                 </div>
                 {textAlign === 'text-right' ?
-                    <div className={`inline-block flex-none align-middle ml-2`}>
+                    <div className={`inline-block flex-none align-middle ml-2 truncate`}>
                         <PlayerStatusTag showConfirmedTag={showConfirmedTag} currentTurn={currentTurn} />
                     </div> : null}
             </div>

@@ -4,13 +4,12 @@ import {
     initiateSocket,
     disconnectSocket,
     sendHandConfirmation,
-    subscribeUpdatePlayers,
+    subscribeUpdatePlayerList,
     subscribeRoomState,
     subscribeStartingCountdown,
     subscribePause,
     subscribeUpdatePlayerCards,
     subscribeAskConfirmHand,
-    subscribeAnnounceStartingPlayer,
     subscribeAskCard
 } from '../../utility/networking';
 import Spinner from '../../shared/spinner';
@@ -29,6 +28,44 @@ const displayMessageValues = {
     [Constants.ROOM_JOIN_FAILURE_MSG_TYPE.USERNAME_TAKEN]: 'Someone has already taken that username in this game!',
     [Constants.ROOM_JOIN_FAILURE_MSG_TYPE.ROOM_FULL]: 'This game is full!',
     [Constants.ROOM_JOIN_FAILURE_MSG_TYPE.ROOM_IN_PROGRESS]: 'This game is currently in progress!'
+}
+
+const teamLeaderboardSettings = {
+    [Constants.TEAM_TYPE.TEAM_A]: { darkColor: "bg-red-200", lightColor: "bg-red-100", name: "Team A" },
+    [Constants.TEAM_TYPE.TEAM_B]: { darkColor: "bg-blue-200", lightColor: "bg-blue-100", name: "Team B" },
+    disconnectedColor: "bg-gray-100"
+}
+
+const TeamLeaderboard = ({ myUsername, players }) => {
+    if (!players || !(players.length === 4)) return null;
+    return (
+        <table className="table-fixed w-full rounded-t-lg bg-gray-200 text-gray-800">
+            <thead>
+                <tr className="text-left border-b-2 border-gray-300">
+                    <th className="px-3 w-3/4">Team</th>
+                    <th className="w-1/4">Points</th>
+                </tr></thead>
+            <tbody>
+                {[Constants.TEAM_TYPE.TEAM_A, Constants.TEAM_TYPE.TEAM_B].map((team) => {
+                    let teamPlayers = players.filter(player => player.currentTeam === team);
+                    if (!teamPlayers.length) return null;
+                    return (<>
+                        <tr className={`${teamLeaderboardSettings[team].darkColor} border-b border-gray-200`}>
+                            <td className="truncate px-3">{teamLeaderboardSettings[team].name}</td>
+                            <td className="">{teamPlayers.reduce((totalPoints, currentTeamPlayer) => totalPoints + currentTeamPlayer.points, 0)}</td>
+                        </tr>
+                        {teamPlayers.map(currentTeamPlayer =>
+                            <tr className={`${currentTeamPlayer.status === Constants.PLAYER_STATUS.PLAYER_DISCONNECTED ?
+                                teamLeaderboardSettings.disconnectedColor : teamLeaderboardSettings[team].lightColor} border-b border-gray-200`}>
+                                <td className={`truncate px-12 ${myUsername === currentTeamPlayer.username ? 'font-bold' : ''}`}>{currentTeamPlayer.username}</td>
+                                <td className="">{currentTeamPlayer.points}</td>
+                            </tr>
+                        )}
+                    </>);
+                })}
+            </tbody>
+        </table>
+    );
 }
 
 export const Room = ({ location }) => {
@@ -84,7 +121,7 @@ export const Room = ({ location }) => {
                 });
             });
 
-            subscribeUpdatePlayers((err, playerObjects) => {
+            subscribeUpdatePlayerList((err, playerObjects) => {
                 if (err) return;
                 setPlayers(playerObjects);
             });
@@ -141,12 +178,21 @@ export const Room = ({ location }) => {
                 </div> : null}
             {displayStatus.status === displayStatusValues.JOIN_SUCCESS ? <>
                 <div className="absolute top-0 left-0">
-                    <div class="w-80 h-24 p-2 flex">
-                        <div class="m-auto font-semibold text-lg break-normal text-center">
+                    <div className="w-80 h-24 p-2 flex">
+                        <div className="m-auto font-semibold text-lg break-normal text-center">
                             {renderGameMessage()}
                         </div>
                     </div>
                 </div>
+                {roomState !== Constants.ROOM_STATES.ROOM_PENDING && roomState !== Constants.ROOM_STATES.ROOM_COUNTDOWN ?
+                    <div className="absolute top-0 right-0">
+                        <div className="w-80 h-24 p-2 flex">
+                            <TeamLeaderboard
+                                myUsername={myUsername}
+                                players={players}
+                            />
+                        </div>
+                    </div> : null}
                 <div>
                     <PlayerList
                         myUsername={myUsername}
@@ -166,12 +212,12 @@ export const Room = ({ location }) => {
                 </div> : null}
 
             </> : (displayStatus.status === displayStatusValues.JOIN_FAILURE ? <>
-                <div class="container mx-auto p-24">
-                    <h1 class="text-lg font-bold text-center mb-5">
+                <div className="container mx-auto p-24">
+                    <h1 className="text-lg font-bold text-center mb-5">
                         {displayMessageValues[displayStatus.message]}
                     </h1>
-                    <div class="w-full text-center">
-                        <button onClick={() => history.push("/")} class="w-28 mx-auto py-2 px-4 bg-red-400 text-white font-semibold shadow-md hover:bg-white hover:text-red-400 focus:outline-none">GO BACK</button>
+                    <div className="w-full text-center">
+                        <button onClick={() => history.push("/")} className="w-28 mx-auto py-2 px-4 bg-red-400 text-white font-semibold shadow-md hover:bg-white hover:text-red-400 focus:outline-none">GO BACK</button>
                     </div>
                 </div>
             </> : <div className="w-full flex h-screen m-auto">

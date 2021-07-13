@@ -9,11 +9,13 @@ class Player {
         this.status = Constants.PLAYER_STATUS.PLAYER_CONNECTED;
 
         this.currentTeam = "";
+        this.points = 0;
+        this.pointsOutdated = false;
+
         this.nextPlayer = undefined;
         this.hasConfirmedHand = false;
-        
         this.currentHand = [];
-        this.numFaceDown = 0; // TO DO: update this count when a player plays a face down card!
+        this.numFaceDown = 0;
         this.collectedCards = [];
     }
 
@@ -31,8 +33,40 @@ class Player {
         let returnCard = this.currentHand[returnCardIndex];
         this.currentHand.splice(returnCardIndex, 1);
         if (returnCard.faceDown) this.numFaceDown--;
-        
+
         return returnCard;
+    }
+
+    calculatePoints(doubleHearts) {
+        if (!this.collectedCards.length) return 0;
+        if (this.collectedCards.length === 1
+            && this.collectedCards[0].rank === '10'
+            && this.collectedCards[0].suit === 'CLUB') {
+            // Player only has the multiplier card, which is +50 points (+100 if face down)
+            let currentCardMultiplier = this.collectedCards[0].faceDown ? 2 : 1;
+            return Constants.CARD_POINTS['10CLUB'] * currentCardMultiplier;
+        }
+
+        let points = 0;
+        let overall_multiplier = 1;
+        this.collectedCards.forEach(card => {
+            if (card.suit === 'HEART') {
+                let currentCardMultiplier = doubleHearts ? 2 : 1;
+                points += Constants.CARD_POINTS.HEART[card.rank] * currentCardMultiplier;
+            } else {
+                let key = card.rank + card.suit;
+                let currentCardMultiplier = card.faceDown ? 2 : 1;
+                if (key === 'JACKDIAMOND' || key === 'QUEENSPADE') {
+                    points += Constants.CARD_POINTS[key] * currentCardMultiplier;
+                } else if (key === '10CLUB') {
+                    overall_multiplier = 2 * currentCardMultiplier;
+                } else {
+                    console.log("huh??");
+                }
+            }
+        });
+        points *= overall_multiplier;
+        return points;
     }
 }
 

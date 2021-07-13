@@ -160,6 +160,9 @@ io.on('connection', socket => {
         let actualCard = currentPlayer.currentHand.filter(c => c.suit === card.suit && c.rank === card.rank)[0];
 
         actualCard.faceDown = true;
+        if (actualCard.suit === 'HEART' && actualCard.rank === 'ACE') {
+            room.doubleHeartPoints = true;
+        }
         currentPlayer.numFaceDown++;
         room.ClientAPI.updatePlayerList();
         room.ClientAPI.updatePlayerCards(currentPlayer);

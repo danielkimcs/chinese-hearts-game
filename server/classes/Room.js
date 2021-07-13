@@ -40,6 +40,7 @@ class Room {
         this.currentTrick = undefined;
         this.trickWinnerPlayer = undefined;
         this.trickEndTimeoutStarted = false;
+        this.doubleHeartPoints = false;
 
         this.ClientAPI = new ClientAPI(this);
     }
@@ -83,7 +84,7 @@ class Room {
             case Constants.ROOM_STATES.ROUND_DEAL:
                 let shuffledDeck = createShuffledDeck();
                 this.getConnectedPlayers().forEach((player, index) => {
-                    player.currentHand = shuffledDeck.slice(index * 13, (index + 1) * 13);
+                    player.currentHand = shuffledDeck.slice(index * shuffledDeck.length / 4, (index + 1) * shuffledDeck.length / 4);
                     this.ClientAPI.updatePlayerCards(player);
                 });
                 this.startState(Constants.ROOM_STATES.ROUND_CONFIRM);
@@ -105,7 +106,7 @@ class Room {
                 break;
             case Constants.ROOM_STATES.TRICK_PLAY:
             case Constants.ROOM_STATES.TRICK_PENDING:
-                this.ClientAPI.askCard();
+                this.ClientAPI.updateCurrentTrick();
                 break;
             case Constants.ROOM_STATES.TRICK_END:
                 if (!this.trickWinnerPlayer || !this.currentTrick.winnerPlayerName) {
@@ -114,7 +115,7 @@ class Room {
                     this.currentTrick.winnerPlayerName = winningPlayer.username;
                     this.trickWinnerPlayer = winningPlayer;
                 }
-                this.ClientAPI.askCard();
+                this.ClientAPI.updateCurrentTrick();
                 let thisRoom = this;
                 if (!this.trickEndTimeoutStarted) {
                     this.trickEndTimeoutStarted = true;
@@ -136,6 +137,22 @@ class Room {
                         }
                     }, 2500);
                 }
+                break;
+            case Constants.ROOM_STATES.ROUND_END:
+                this.ClientAPI.updateCurrentTrick(); // clears the table from last trick
+                this.getConnectedPlayers().forEach(player => {
+                    player.points += player.calculatePoints(this.doubleHeartPoints);
+
+                    // Reset everything
+                    // player.collectedCards = [];
+                    this.nextPlayer = undefined;
+                    this.hasConfirmedHand = false;
+                    this.currentHand = [];
+                    this.numFaceDown = 0;
+                    player.pointsOutdated = false;
+                });
+                this.doubleHeartPoints = false;
+                this.ClientAPI.updatePlayerList();
                 break;
             default:
         }
@@ -171,7 +188,7 @@ class Room {
         switch (this.currentState) {
             case Constants.ROOM_STATES.TRICK_PLAY:
             case Constants.ROOM_STATES.TRICK_PENDING:
-                this.ClientAPI.askCard();
+                this.ClientAPI.updateCurrentTrick();
             case Constants.ROOM_STATES.TRICK_END:
             case Constants.ROOM_STATES.ROUND_DEAL:
             case Constants.ROOM_STATES.ROUND_CONFIRM:
@@ -304,7 +321,8 @@ class ClientAPI {
                 nextPlayerUsername: playerObj.nextPlayer ? playerObj.nextPlayer.username : "",
                 hasConfirmedHand: playerObj.hasConfirmedHand,
                 numFaceDown: playerObj.numFaceDown,
-                collectedCards: playerObj.collectedCards
+                collectedCards: playerObj.collectedCards,
+                points: playerObj.points,
             }
         });
 
@@ -338,9 +356,8 @@ class ClientAPI {
         this.room.io.in(roomDestination).emit(Constants.CLIENT_API.ASK_CONFIRM_HAND);
     }
 
-    askCard() {
+    updateCurrentTrick() {
         let currentTrick = this.room.currentTrick;
-        if (!currentTrick) return;
         this.room.io.in(this.room.roomName).emit(Constants.CLIENT_API.TRICK_ASK_CARD, currentTrick);
     }
 }

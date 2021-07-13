@@ -36,7 +36,7 @@ export const sendHandConfirmation = () => {
     socket.emit(Constants.SERVER_EVENTS.FACE_DOWN_CONFIRMED);
 }
 
-export const subscribeUpdatePlayers = (callback) => {
+export const subscribeUpdatePlayerList = (callback) => {
     if (!socket) return true;
 
     socket.on(Constants.CLIENT_API.UPDATE_PLAYER_LIST, playerObjects => {
