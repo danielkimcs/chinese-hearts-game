@@ -47,7 +47,7 @@ export const Room = ({ location }) => {
     const [currentTrick, setCurrentTrick] = useState(null);
 
     let { roomName } = useParams();
-    let myUsername = location.state.username;
+    let myUsername = location.state ? location.state.username : null;
 
     const renderGameMessage = () => {
         if (roomState === Constants.ROOM_STATES.ROUND_CONFIRM) {
@@ -61,8 +61,8 @@ export const Room = ({ location }) => {
                 } else if (roomState === Constants.ROOM_STATES.TRICK_PENDING) {
                     return `Waiting for ${currentTurnPlayerName} to play a card...`;
                 }
-            } else if (roomState === Constants.ROOM_STATES.TRICK_END) {
-                return `Everyone has played their card! Starting next trick...`;
+            } else if (roomState === Constants.ROOM_STATES.TRICK_END && currentTrick.winnerPlayerName) {
+                return `${currentTrick.winnerPlayerName} has won this trick! Starting next trick...`;
             }
         }
     }

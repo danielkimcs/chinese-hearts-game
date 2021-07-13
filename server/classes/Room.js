@@ -38,6 +38,8 @@ class Room {
         this.gamePaused = false;
 
         this.currentTrick = undefined;
+        this.trickWinnerPlayer = undefined;
+        this.trickEndTimeoutStarted = false;
 
         this.ClientAPI = new ClientAPI(this);
     }
@@ -106,23 +108,34 @@ class Room {
                 this.ClientAPI.askCard();
                 break;
             case Constants.ROOM_STATES.TRICK_END:
+                if (!this.trickWinnerPlayer || !this.currentTrick.winnerPlayerName) {
+                    let winningPlayerId = this.currentTrick.determineWinner();
+                    let winningPlayer = Object.values(this.players).filter(player => player.playerId === winningPlayerId)[0];
+                    this.currentTrick.winnerPlayerName = winningPlayer.username;
+                    this.trickWinnerPlayer = winningPlayer;
+                }
                 this.ClientAPI.askCard();
                 let thisRoom = this;
-                setTimeout(function () {
-                    let winningPlayerId = thisRoom.currentTrick.determineWinner();
-                    let winningPlayer = Object.values(thisRoom.players).filter(player => player.playerId === winningPlayerId)[0];
-                    let newCollectedCards = thisRoom.currentTrick.collectCards();
-                    winningPlayer.collectedCards = winningPlayer.collectedCards.concat(newCollectedCards);
-                    thisRoom.ClientAPI.updatePlayerList();
+                if (!this.trickEndTimeoutStarted) {
+                    this.trickEndTimeoutStarted = true;
+                    setTimeout(function () {
+                        let newCollectedCards = thisRoom.currentTrick.collectCards();
+                        let winningPlayer = thisRoom.trickWinnerPlayer;
+                        winningPlayer.collectedCards = winningPlayer.collectedCards.concat(newCollectedCards);
+                        thisRoom.ClientAPI.updatePlayerList();
+                        thisRoom.trickWinnerPlayer = undefined;
 
-                    if (winningPlayer.currentHand.length) {
-                        thisRoom.currentTrick = new Trick(winningPlayerId);
-                        thisRoom.startState(Constants.ROOM_STATES.TRICK_PLAY);
-                    } else {
-                        thisRoom.currentTrick = undefined;
-                        thisRoom.startState(Constants.ROOM_STATES.ROUND_END);
-                    }
-                }, 2500);
+                        if (winningPlayer.currentHand.length) {
+                            thisRoom.currentTrick = new Trick(winningPlayer.playerId);
+                            thisRoom.trickEndTimeoutStarted = false;
+                            thisRoom.startState(Constants.ROOM_STATES.TRICK_PLAY);
+                        } else {
+                            thisRoom.currentTrick = undefined;
+                            thisRoom.trickEndTimeoutStarted = false;
+                            thisRoom.startState(Constants.ROOM_STATES.ROUND_END);
+                        }
+                    }, 2500);
+                }
                 break;
             default:
         }
@@ -159,6 +172,7 @@ class Room {
             case Constants.ROOM_STATES.TRICK_PLAY:
             case Constants.ROOM_STATES.TRICK_PENDING:
                 this.ClientAPI.askCard();
+            case Constants.ROOM_STATES.TRICK_END:
             case Constants.ROOM_STATES.ROUND_DEAL:
             case Constants.ROOM_STATES.ROUND_CONFIRM:
             case Constants.ROOM_STATES.ROUND_START:

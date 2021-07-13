@@ -6,6 +6,7 @@ class Trick {
         this.currentTurnPlayerId = startingPlayerId;
         this.leadingSuit = "";
         this.playedCards = {};
+        this.winnerPlayerName = undefined;
     }
 
     determineWinner() {
