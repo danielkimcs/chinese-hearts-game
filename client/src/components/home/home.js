@@ -32,7 +32,7 @@ export const Home = () => {
             <form onSubmit={handleSubmit}>
                 <div className="w-1/2 mx-auto mt-12 flex flex-col">
                     <div className="mx-auto">
-                        <span class="font-bold text-2xl">
+                        <span className="font-bold text-2xl">
                             Chinese Hearts
                         </span>
                     </div>

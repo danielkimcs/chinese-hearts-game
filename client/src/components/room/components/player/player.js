@@ -111,7 +111,7 @@ const CollectedCardsComponent = ({ collectedCards }) => {
         <div className="col-span-1 relative mt-5">
             {sortedCollectedCards.map((card, index) =>
                 <div className={`h-20 w-12 absolute top-0 ${card.faceDown ? '-mt-2' : ''}`} style={{ marginLeft: `${index}rem` }}>
-                    {card.faceDown ? <div class="absolute -top-5 -rotate-45"><span class="text-red-600 font-bold text-xs">x2</span></div> : null}
+                    {card.faceDown ? <div className="absolute -top-5 -rotate-45"><span className="text-red-600 font-bold text-xs">x2</span></div> : null}
                     {getCardImage(card.rank, card.suit)}
                 </div>
             )}

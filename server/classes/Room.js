@@ -106,19 +106,23 @@ class Room {
                 this.ClientAPI.askCard();
                 break;
             case Constants.ROOM_STATES.TRICK_END:
-                let winningPlayerId = this.currentTrick.determineWinner();
-                let winningPlayer = Object.values(this.players).filter(player => player.playerId === winningPlayerId)[0];
-                let newCollectedCards = this.currentTrick.collectCards();
-                winningPlayer.collectedCards = winningPlayer.collectedCards.concat(newCollectedCards);
-                this.ClientAPI.updatePlayerList();
+                this.ClientAPI.askCard();
+                let thisRoom = this;
+                setTimeout(function () {
+                    let winningPlayerId = thisRoom.currentTrick.determineWinner();
+                    let winningPlayer = Object.values(thisRoom.players).filter(player => player.playerId === winningPlayerId)[0];
+                    let newCollectedCards = thisRoom.currentTrick.collectCards();
+                    winningPlayer.collectedCards = winningPlayer.collectedCards.concat(newCollectedCards);
+                    thisRoom.ClientAPI.updatePlayerList();
 
-                if (winningPlayer.currentHand.length) {
-                    this.currentTrick = new Trick(winningPlayerId);
-                    this.startState(Constants.ROOM_STATES.TRICK_PLAY);
-                } else {
-                    this.currentTrick = undefined;
-                    this.startState(Constants.ROOM_STATES.ROUND_END);
-                }
+                    if (winningPlayer.currentHand.length) {
+                        thisRoom.currentTrick = new Trick(winningPlayerId);
+                        thisRoom.startState(Constants.ROOM_STATES.TRICK_PLAY);
+                    } else {
+                        thisRoom.currentTrick = undefined;
+                        thisRoom.startState(Constants.ROOM_STATES.ROUND_END);
+                    }
+                }, 2500);
                 break;
             default:
         }
@@ -289,7 +293,7 @@ class ClientAPI {
                 collectedCards: playerObj.collectedCards
             }
         });
-        
+
         this.room.io.to(this.room.roomName).emit(Constants.CLIENT_API.UPDATE_PLAYER_LIST, playerObjects);
     }
 

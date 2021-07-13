@@ -47,6 +47,25 @@ export const Room = ({ location }) => {
     const [currentTrick, setCurrentTrick] = useState(null);
 
     let { roomName } = useParams();
+    let myUsername = location.state.username;
+
+    const renderGameMessage = () => {
+        if (roomState === Constants.ROOM_STATES.ROUND_CONFIRM) {
+            return "Waiting for players to place any special cards face down and confirm their hand...";
+        } else if (currentTrick && players) {
+            let currentTurnPlayer = players.filter(player => player.playerId === currentTrick.currentTurnPlayerId)[0];
+            let currentTurnPlayerName = currentTurnPlayer ? currentTurnPlayer.username : null;
+            if (currentTurnPlayerName) {
+                if (roomState === Constants.ROOM_STATES.TRICK_PLAY) {
+                    return `Waiting for ${currentTurnPlayerName} to start the trick!`;
+                } else if (roomState === Constants.ROOM_STATES.TRICK_PENDING) {
+                    return `Waiting for ${currentTurnPlayerName} to play a card!`;
+                }
+            } else if (roomState === Constants.ROOM_STATES.TRICK_END) {
+                return `Everyone has played their card! Starting next trick...`;
+            }
+        }
+    }
 
     const confirmHand = () => {
         if (pause) return;
@@ -56,7 +75,7 @@ export const Room = ({ location }) => {
 
     useEffect(() => {
         if (location.state) {
-            initiateSocket({ username: location.state.username, roomName: roomName }, (response) => {
+            initiateSocket({ username: myUsername, roomName: roomName }, (response) => {
                 setDisplayStatus({
                     status: response.status ?
                         displayStatusValues.JOIN_SUCCESS :
@@ -113,17 +132,20 @@ export const Room = ({ location }) => {
     return (
         <>
             {pause ?
-                <div class="h-screen absolute top-0 bg-gray-600 bg-opacity-50 w-full z-10 flex">
-                    <div class="w-96 h-48 bg-white mx-auto my-auto p-5 text-center flex">
-                        <div class="mx-auto my-auto">
+                <div className="h-screen absolute top-0 bg-gray-600 bg-opacity-50 w-full z-10 flex">
+                    <div className="w-96 h-48 bg-white mx-auto my-auto p-5 text-center flex">
+                        <div className="mx-auto my-auto">
                             A player has disconnected! The game is paused until someone takes their place!
                         </div>
                     </div>
                 </div> : null}
             {displayStatus.status === displayStatusValues.JOIN_SUCCESS ? <>
+                <div className="absolute top-0 left-0">
+                    {renderGameMessage()}
+                </div>
                 <div>
                     <PlayerList
-                        myUsername={location.state.username}
+                        myUsername={myUsername}
                         players={players}
                         roomState={roomState}
                         currentCards={currentCards}
@@ -133,14 +155,11 @@ export const Room = ({ location }) => {
                         startingCountdown={startingCountdown} />
                 </div>
 
-                <div>
-                    {hasConfirmedHand === false ? <div class="w-full flex mt-16">
-                        <div class="mx-auto">
-                            <button class="w-auto mx-auto py-2 px-4 bg-green-400 text-white font-semibold shadow-md hover:bg-white hover:text-green-400 focus:outline-none" onClick={confirmHand}>CONFIRM HAND</button>
-                        </div>
-                    </div> : null}
-                </div>
-
+                {hasConfirmedHand === false ? <div className="w-full flex mt-16">
+                    <div className="mx-auto">
+                        <button className="w-auto mx-auto py-2 px-4 bg-green-400 text-white font-semibold shadow-md hover:bg-white hover:text-green-400 focus:outline-none" onClick={confirmHand}>CONFIRM HAND</button>
+                    </div>
+                </div> : null}
 
             </> : (displayStatus.status === displayStatusValues.JOIN_FAILURE ? <>
                 <p>{displayStatus.message} {displayMessageValues[displayStatus.message]} <button onClick={() => history.push("/")}>Go back home</button></p>

@@ -213,6 +213,7 @@ io.on('connection', socket => {
         }
         else if (currentTrick.currentTurnPlayerId === currentTrick.startingPlayerId) {
             // Everyone has played their cards
+            currentTrick.currentTurnPlayerId = undefined;
             room.startState(Constants.ROOM_STATES.TRICK_END);
         }
         else {
