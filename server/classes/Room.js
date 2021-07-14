@@ -167,7 +167,12 @@ class Room {
                 this.doubleHeartPoints = false;
                 this.ClientAPI.updatePlayerList();
 
-                this.ClientAPI.askStartRound();
+                Object.keys(this.players).forEach(playerUsername => {
+                    let player = this.players[playerUsername];
+                    if (!player.hasConfirmedStartRound) {
+                        this.ClientAPI.askStartRound(player);
+                    }
+                });
                 break;
             default:
         }
