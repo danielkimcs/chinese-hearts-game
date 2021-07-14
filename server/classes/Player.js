@@ -55,10 +55,12 @@ class Player {
         let points = 0;
         let overallMultiplier = 1;
         let heartPoints = 0;
+        let numHeartsCollected = 0;
         this.collectedCards.forEach(card => {
             if (card.suit === 'HEART') {
                 let currentCardMultiplier = doubleHearts ? 2 : 1;
                 heartPoints += Constants.CARD_POINTS.HEART[card.rank] * currentCardMultiplier;
+                numHeartsCollected++;
             } else {
                 let key = card.rank + card.suit;
                 let currentCardMultiplier = card.faceDown ? 2 : 1;
@@ -71,7 +73,8 @@ class Player {
                 }
             }
         });
-        if ((!doubleHearts && heartPoints === -200) || (doubleHearts && heartPoints === -400)) {
+        if (numHeartsCollected === 13) {
+            // Turn all heart point values positive if all hearts are collected
             heartPoints = -heartPoints;
         }
         points += heartPoints;
