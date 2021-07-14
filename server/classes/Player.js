@@ -41,6 +41,9 @@ class Player {
 
     calculatePoints(doubleHearts) {
         if (!this.collectedCards.length) return 0;
+        // if (this.collectedCards.length === 16) {
+        //     return Constants.COLLECTED_ALL_CARDS;
+        // }
         if (this.collectedCards.length === 1
             && this.collectedCards[0].rank === '10'
             && this.collectedCards[0].suit === 'CLUB') {
@@ -50,24 +53,29 @@ class Player {
         }
 
         let points = 0;
-        let overall_multiplier = 1;
+        let overallMultiplier = 1;
+        let heartPoints = 0;
         this.collectedCards.forEach(card => {
             if (card.suit === 'HEART') {
                 let currentCardMultiplier = doubleHearts ? 2 : 1;
-                points += Constants.CARD_POINTS.HEART[card.rank] * currentCardMultiplier;
+                heartPoints += Constants.CARD_POINTS.HEART[card.rank] * currentCardMultiplier;
             } else {
                 let key = card.rank + card.suit;
                 let currentCardMultiplier = card.faceDown ? 2 : 1;
                 if (key === 'JACKDIAMOND' || key === 'QUEENSPADE') {
                     points += Constants.CARD_POINTS[key] * currentCardMultiplier;
                 } else if (key === '10CLUB') {
-                    overall_multiplier = 2 * currentCardMultiplier;
+                    overallMultiplier = 2 * currentCardMultiplier;
                 } else {
                     console.log("huh??");
                 }
             }
         });
-        points *= overall_multiplier;
+        if ((!doubleHearts && heartPoints === -200) || (doubleHearts && heartPoints === -400)) {
+            heartPoints = -heartPoints;
+        }
+        points += heartPoints;
+        points *= overallMultiplier;
         return points;
     }
 }
