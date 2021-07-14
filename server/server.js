@@ -199,7 +199,7 @@ io.on('connection', socket => {
 
         room.ClientAPI.updatePlayerList();
 
-        // Check if every connected player has confirmed hand
+        // Check if every connected player has confirmed starting round
         let everyoneHasConfirmed = room.getConnectedPlayers()
             .reduce((confirmedSoFar, nextPlayer) => confirmedSoFar && nextPlayer.hasConfirmedStartRound, true);
 

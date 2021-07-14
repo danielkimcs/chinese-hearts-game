@@ -41,7 +41,7 @@ const teamLeaderboardSettings = {
 const TeamLeaderboard = ({ myUsername, players }) => {
     if (!players || !(players.length === 4)) return null;
     return (
-        <table className="table-fixed w-full rounded-t-lg bg-gray-200 text-gray-800">
+        <table className="table-fixed w-full bg-gray-200 text-gray-800">
             <thead>
                 <tr className="text-left border-b-2 border-gray-300">
                     <th className="px-3 w-3/4">Team</th>

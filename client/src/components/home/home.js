@@ -125,7 +125,7 @@ const Rules = ({ toggleRules }) => {
                     </table>
 
                     <h3>Gameplay</h3>
-                    <p>Gameplay consists of a series of tricks, each of which every player submits one card (therefore, one round consists of 13 tricks). A player is randomly selected to begin the first trick. </p>
+                    <p>Gameplay happens in rounds, where each round consists of a series of tricks. In each trick, each player submits one card (therefore, one round consists of 13 tricks). A player is randomly selected to begin the first trick. </p>
                     <ul>
                         <li>A player starts a trick by playing a card, which determines the leading suit for the trick. </li>
                         <li>For each of the remaining players, if the player has any cards of the leading suit in their hand, one of those must be played.
@@ -142,7 +142,8 @@ const Rules = ({ toggleRules }) => {
                         which is +180 points.
                     </p>
 
-                    <p>Each team's points are calculated by adding the players' points together. </p>
+                    <p>Each team's points are calculated by adding the players' points together. Except the first round, the player who collected Q&spades;
+                        must begin the first track of the next round. </p>
                 </article>
             </div>
         </div>
