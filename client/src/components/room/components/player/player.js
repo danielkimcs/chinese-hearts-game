@@ -54,18 +54,18 @@ const PlayerUsernameTag = ({ username, status, currentTeam, textAlign, showConfi
 
 const FaceDownCard = ({ card, index, isLegalMoveWrapper, playCard, currentTurn }) => {
     let isLegal = currentTurn ? isLegalMoveWrapper(card) : false;
-    let conditionalStyling = currentTurn && isLegal ? 'hover:cursor-pointer' : '';
+    let playableCardStyling = currentTurn && isLegal ? 'hover:cursor-pointer transform hover:-translate-y-4 transition-transform duration-300' : '';
 
     return (
         <>
             {index === 0 ?
                 <div
-                    className={`h-20 w-16 ` + conditionalStyling}
+                    className={`h-20 w-16 ` + playableCardStyling}
                     onClick={currentTurn && isLegal ? () => playCard(card) : undefined}
                 >
                     {card ? getCardImage(card.rank, card.suit) : getCardImage()}
                 </div> : <div
-                    className={`h-20 w-16 absolute top-0 ${faceDownCardMarginOffset[index]} ` + conditionalStyling}
+                    className={`h-20 w-16 absolute top-0 ${faceDownCardMarginOffset[index]} ` + playableCardStyling}
                     onClick={currentTurn && isLegal ? () => playCard(card) : undefined}
                 >
                     {card ? getCardImage(card.rank, card.suit) : getCardImage()}
@@ -77,7 +77,7 @@ const FaceDownCard = ({ card, index, isLegalMoveWrapper, playCard, currentTurn }
 
 const FaceDownCardContainer = ({ numFaceDown, myFaceDownCards, isLegalMoveWrapper, playCard, currentTurn }) => {
     return (
-        <div className="col-span-1 relative overflow-y-hidden">
+        <div className="col-span-1 relative">
             {numFaceDown > 0 ? myFaceDownCards ? myFaceDownCards.map((card, index) =>
                 <FaceDownCard key={index} card={card} index={index} isLegalMoveWrapper={isLegalMoveWrapper} playCard={playCard} currentTurn={currentTurn} />
             ) : [...Array(numFaceDown)].map((ignore, index) =>
@@ -89,7 +89,7 @@ const FaceDownCardContainer = ({ numFaceDown, myFaceDownCards, isLegalMoveWrappe
 
 const PlayedCardComponent = ({ playedCard }) => {
     return (
-        <div className="h-20 w-16 mx-auto relative">
+        <div className="h-28 w-20 mx-auto relative">
             {playedCard ? <>
                 {playedCard.faceDown ?
                     <div className="absolute -top-3 -right-2"><span className="text-red-600 font-bold">x2</span></div> : null}

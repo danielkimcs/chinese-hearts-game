@@ -5,7 +5,7 @@ const Card = require('./Card');
 const Trick = require('./Trick');
 
 const COUNTDOWN_INTERVAL_TIME = 1000;
-const ROUND_END_DELAY = 2500;
+const ROUND_END_DELAY = 3500;
 const DEVELOPMENT_MODE = false;
 
 const SUITS = Object.keys(Constants.CARD_TYPE.SUITS);
@@ -90,6 +90,7 @@ class Room {
                 roundPlayers.forEach(player => {
                     player.collectedCards = [];
                 });
+                this.ClientAPI.updatePlayerList();
 
                 let shuffledDeck = createShuffledDeck();
                 roundPlayers.forEach((player, index) => {

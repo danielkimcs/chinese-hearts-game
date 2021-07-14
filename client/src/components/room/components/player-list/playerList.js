@@ -21,6 +21,9 @@ const compareCards = (card1, card2) => {
     }
 }
 
+let activeCardStyling = 'hover:cursor-pointer transform hover:-translate-y-4 transition-transform duration-300';
+
+
 export const PlayerList = ({ myUsername, players, roomState, currentCards, currentTrick, hasConfirmedHand, pause, startingCountdown }) => {
     const isLegalMoveWrapper = (playedCard) => {
         if (playedCard == null) return false;
@@ -117,7 +120,7 @@ export const PlayerList = ({ myUsername, players, roomState, currentCards, curre
                                 let isSpecial = isSpecialCard(card);
                                 return (
                                     <div key={`${card.suit}${card.rank}`}
-                                        className={`h-32 w-24 ` + (isSpecial ? 'hover:cursor-pointer' : 'opacity-40')}
+                                        className={`h-32 w-24 ` + (isSpecial ? activeCardStyling : 'opacity-40')}
                                         onClick={isSpecial ? () => setFaceDown(card) : undefined}>
                                         {getCardImage(card.rank, card.suit)}
                                     </div>
@@ -128,7 +131,7 @@ export const PlayerList = ({ myUsername, players, roomState, currentCards, curre
                                 let isLegal = isLegalMove(currentTrick, currentCards, card);
                                 return (
                                     <div key={`${card.suit}${card.rank}`}
-                                        className={`h-32 w-24 ` + (isLegal ? 'hover:cursor-pointer' : 'opacity-40')}
+                                        className={`h-32 w-24 ` + (isLegal ? activeCardStyling : 'opacity-40')}
                                         onClick={isLegal ? () => playCard(card) : undefined}>
                                         {getCardImage(card.rank, card.suit)}
                                     </div>
