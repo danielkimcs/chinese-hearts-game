@@ -40,6 +40,7 @@ class Room {
         this.gamePaused = false;
 
         this.currentTrick = undefined;
+        this.queenSpadeRecipient = undefined;
         this.trickWinnerPlayer = undefined;
         this.trickEndTimeoutStarted = false;
         this.doubleHeartPoints = false;
@@ -108,7 +109,9 @@ class Room {
                 });
                 break;
             case Constants.ROOM_STATES.ROUND_START:
-                if (!this.currentTrick) {
+                if (this.queenSpadeRecipient) {
+                    this.currentTrick = new Trick(this.queenSpadeRecipient.playerId);
+                } else if (!this.currentTrick) {
                     let randomFirstPlayerId = Utility.chooseRandom(this.getConnectedPlayers()).playerId;
                     this.currentTrick = new Trick(randomFirstPlayerId);
                 }
@@ -132,6 +135,9 @@ class Room {
                     setTimeout(function () {
                         let newCollectedCards = thisRoom.currentTrick.collectCards();
                         let winningPlayer = thisRoom.trickWinnerPlayer;
+                        if (newCollectedCards.filter(card => card.suit === 'SPADE' && card.rank === 'QUEEN').length) {
+                            thisRoom.queenSpadeRecipient = winningPlayer;
+                        }
                         winningPlayer.collectedCards = winningPlayer.collectedCards.concat(newCollectedCards);
                         thisRoom.ClientAPI.updatePlayerList();
                         thisRoom.trickWinnerPlayer = undefined;
