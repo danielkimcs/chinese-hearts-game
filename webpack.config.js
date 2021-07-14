@@ -1,5 +1,6 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
 const path = require('path');
 
 module.exports = {
@@ -15,8 +16,17 @@ module.exports = {
         }),
         new HtmlWebpackPlugin({
             template: './client/public/index.html',
-            favicon: './client/public/favicon.ico'
         }),
+        new FaviconsWebpackPlugin({
+            logo: './shared/qspades.png',
+            favicons: {
+                appName: 'chinese-hearts',
+                appDescription: 'Play Chinese Hearts together online!',
+                developerName: 'Daniel Kim',
+                background: '#ffffff',
+                theme_color: '#ffffff',
+            }
+        })
     ],
     module: {
         rules: [
