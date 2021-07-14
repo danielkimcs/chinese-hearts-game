@@ -76,6 +76,7 @@ module.exports = Object.freeze({
             ACE: -50
         }
     },
+    COLLECTED_ALL_CARDS: -1,
     ROOM_STATES: {
         ROOM_PENDING: 'ROOM_PENDING',
         ROOM_COUNTDOWN: 'ROOM_COUNTDOWN',

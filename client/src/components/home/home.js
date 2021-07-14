@@ -15,7 +15,7 @@ const Rules = ({ toggleRules }) => {
     }
     return (
         <div onClick={toggleRules} class="h-screen bg-gray-100">
-            <div onClick={stopPropagation} class="absolute w-1/2 left-1/4 mt-12 p-8 h-3/4 overflow-y-auto bg-white shadow-lg">
+            <div onClick={stopPropagation} class="absolute w-1/2 left-1/4 mt-12 p-12 h-3/4 overflow-y-auto bg-white shadow-lg">
                 <div class="absolute right-4">
                     <button type="button" onClick={toggleRules} class="mx-auto py-2 px-4 bg-yellow-500 text-white font-semibold shadow-md hover:bg-white hover:text-yellow-500 focus:outline-none">Close</button>
                 </div>
@@ -27,7 +27,7 @@ const Rules = ({ toggleRules }) => {
 
                     <h3>Setup</h3>
                     <p>
-                        The deck is evenly split between four players, randomly divided into two teams.
+                        A round is set up with the deck evenly split between four players who are divided into two teams.
                         There are four particular cards with special purposes:
                         A<span class="text-red-500">&hearts;</span>, J&diams; (The Lamb),
                         Q&spades; (The Pig), and
@@ -124,8 +124,13 @@ const Rules = ({ toggleRules }) => {
                         </tbody>
                     </table>
 
+                    If a player collects <strong>every <span class="text-red-500">&hearts;</span> card</strong> (including 2<span class="text-red-500">&hearts;</span> - 4<span class="text-red-500">&hearts;</span>),
+                    then all point values for the <span class="text-red-500">&hearts;</span> cards become positive (therefore adding 200 points if A<span class="text-red-500">&hearts;</span> was not face down
+                    or 400 points if A<span class="text-red-500">&hearts;</span> was placed face down).
+
                     <h3>Gameplay</h3>
-                    <p>Gameplay happens in rounds, where each round consists of a series of tricks. In each trick, each player submits one card (therefore, one round consists of 13 tricks). A player is randomly selected to begin the first trick. </p>
+                    <p>Gameplay happens in rounds, where each round consists of a series of tricks. In each trick, each player submits one card (therefore, one round consists of 13 tricks).
+                        After all players have placed any special cards face down, a player is selected to begin the first trick, either randomly or due to collecting Q&spades; last round.</p>
                     <ul>
                         <li>A player starts a trick by playing a card, which determines the leading suit for the trick. </li>
                         <li>For each of the remaining players, if the player has any cards of the leading suit in their hand, one of those must be played.
@@ -200,7 +205,10 @@ export const Home = () => {
                                     Game ID must contain only letters and/or numbers!
                                 </span> : null}
                             </div>
-                            <div className="mx-auto w-64 flex flex-row">
+                            <div className="my-2 mx-auto w-64">
+                                <span className="block text-sm text-gray-500">Players who enter the same game ID play together!</span>
+                            </div>
+                            <div className="mt-3 mx-auto w-64 flex flex-row">
                                 <button onClick={toggleRules} type="button" className="w-24 mx-auto py-2 px-4 bg-yellow-500 text-white font-semibold shadow-md hover:bg-white hover:text-yellow-500 focus:outline-none">Rules</button>
                                 <button className="w-24 mx-auto py-2 px-4 bg-green-400 text-white font-semibold shadow-md hover:bg-white hover:text-green-400 focus:outline-none" type="submit">Join!</button>
                             </div>
@@ -209,7 +217,7 @@ export const Home = () => {
                 </div>
 
 
-                <div className="text-center font-light p-8">
+                <div className="text-center text-md font-light p-16">
                     Daniel Kim &bull; <a className="hover:font-bold text-green-600" href="https://github.com/danielkimcs/chinese-hearts-game">GitHub</a>
                 </div>
             </>}
