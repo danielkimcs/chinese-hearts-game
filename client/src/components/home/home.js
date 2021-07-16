@@ -61,7 +61,8 @@ export const Home = () => {
                                 </span> : null}
                             </div>
                             <div className="my-2 mx-auto max-w-md">
-                                <span className="block text-sm text-gray-500">Players who enter the same game ID play together!</span>
+                                <p className="block text-sm text-gray-500">Players who enter the same game ID play together!</p>
+                                <p className="lg:hidden block text-sm text-gray-500 text-red-400">* Not yet optimized for small mobile screens! Playing on a wider screen is strongly advised.</p>
                             </div>
                             <div className="mt-3 w-full">
                                 <div className="max-w-xs mx-auto flex flex-col items-center">
