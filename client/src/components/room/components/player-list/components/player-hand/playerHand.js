@@ -14,6 +14,7 @@ const compareCards = (card1, card2) => {
         return Constants.CARD_TYPE.RANKS[card2.rank] - Constants.CARD_TYPE.RANKS[card1.rank];
     }
 }
+const cardDimensions = 'h-32 w-24 my-2';
 
 export const PlayerHand = ({
     currentCards,
@@ -37,13 +38,13 @@ export const PlayerHand = ({
     
     return (
         <div className="grid justify-items-center">
-            <div className="flex flex-row">
+            <div className="flex flex-row flex-wrap justify-center">
                 {sortedCurrentCards.map((card) => {
                     if (!card.faceDown && hasNotConfirmedHand) {
                         let isSpecial = isSpecialCard(card);
                         return (
                             <div key={`${card.suit}${card.rank}`}
-                                className={`h-32 w-24 ` + (isSpecial ? 'card-active' : 'opacity-40')}
+                                className={`${cardDimensions} ` + (isSpecial ? 'card-active' : 'opacity-40')}
                                 onClick={isSpecial ? () => setFaceDown(card) : undefined}>
                                 {getCardImage(card.rank, card.suit)}
                             </div>
@@ -54,7 +55,7 @@ export const PlayerHand = ({
                         let isLegal = isLegalMove(currentTrick, currentCards, card);
                         return (
                             <div key={`${card.suit}${card.rank}`}
-                                className={`h-32 w-24 ` + (isLegal ? 'card-active' : 'opacity-40')}
+                                className={`${cardDimensions} ` + (isLegal ? 'card-active' : 'opacity-40')}
                                 onClick={isLegal ? () => playCard(card) : undefined}>
                                 {getCardImage(card.rank, card.suit)}
                             </div>
@@ -63,7 +64,7 @@ export const PlayerHand = ({
                         if (card.faceDown) return null;
                         return (
                             <div key={`${card.suit}${card.rank}`}
-                                className={`h-32 w-24 opacity-40`}>
+                                className={`${cardDimensions} opacity-40`}>
                                 {getCardImage(card.rank, card.suit)}
                             </div>
                         );
