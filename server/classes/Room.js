@@ -6,7 +6,7 @@ const Trick = require('./Trick');
 
 const COUNTDOWN_INTERVAL_TIME = 1000;
 const ROUND_END_DELAY = 3500;
-const DEVELOPMENT_MODE = true;
+const DEVELOPMENT_MODE = false;
 
 const SUITS = Object.keys(Constants.CARD_TYPE.SUITS);
 const RANKS = Object.keys(Constants.CARD_TYPE.RANKS);

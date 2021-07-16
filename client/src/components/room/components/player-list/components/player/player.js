@@ -4,13 +4,64 @@ import FaceDownCardContainer from './components/faceDownCardContainer';
 import PlayedCardComponent from './components/playedCardComponent';
 import CollectedCardsComponent from './components/collectedCardsComponent';
 
-const Constants = require('../../../../../../../../shared/constants');
-
-const playerPosition = {
+const indexToPosition = {
     0: 'TOP',
     1: 'LEFT',
     2: 'RIGHT',
     3: 'BOTTOM'
+}
+const checkPlayerPosition = (position, acceptablePositions) => {
+    return acceptablePositions.reduce((overallBoolean, currentPosition) => overallBoolean || (position === currentPosition), false);
+}
+
+const TopPlayer = ({ username, status, currentTeam, numFaceDown, showConfirmedTag, currentTurn, collectedCards }) => {
+    return (
+        <div className={`pt-1 mx-auto w-96 ${collectedCards.length ? 'h-48' : 'h-24'}`}>
+            <div className="flex flex-col px-1">
+                <div className="grid grid-cols-2 xl:grid-cols-3 my-1">
+                    <PlayerUsernameTag
+                        {...{ username, status, currentTeam, showConfirmedTag, currentTurn }}
+                        textAlign="text-left"
+                        isBottom={false} />
+                    <FaceDownCardContainer numFaceDown={numFaceDown} />
+                </div>
+            </div>
+            {collectedCards.length ? <CollectedCardsComponent collectedCards={collectedCards} /> : null}
+        </div>
+    );
+}
+
+const LeftOrRightPlayerTag = ({ numFaceDown, username, status, currentTeam, showConfirmedTag, currentTurn, left }) => {
+    let usernameTag = (
+        <PlayerUsernameTag
+            {...{ username, status, currentTeam, showConfirmedTag, currentTurn }}
+            textAlign="text-left"
+            isBottom={false} />
+    );
+    let faceDownContainer = (
+        <FaceDownCardContainer numFaceDown={numFaceDown} />
+    );
+    return (
+        <> {left ? <>
+            {usernameTag}
+            {faceDownContainer}
+        </> : <>
+            {faceDownContainer}
+            {usernameTag}
+        </>} </>
+    );
+}
+
+const BottomPlayerTag = ({ numFaceDown, username, status, currentTeam, showConfirmedTag, currentTurn, isLegalMoveWrapper, playCard, myFaceDownCards }) => {
+    return (
+        <>
+            <PlayerUsernameTag
+                {...{ username, status, currentTeam, showConfirmedTag, currentTurn }}
+                textAlign="text-left"
+                isBottom={true} />
+            <FaceDownCardContainer {...{ numFaceDown, isLegalMoveWrapper, playCard, currentTurn, myFaceDownCards }} />
+        </>
+    );
 }
 
 export const Player = ({
@@ -28,7 +79,8 @@ export const Player = ({
     isLegalMoveWrapper,
     playCard
 }) => {
-
+    let currentPlayerPosition = indexToPosition[index];
+    
     return (
         <>
             {!currentTeam.length ?
@@ -36,41 +88,35 @@ export const Player = ({
                     {username}
                 </div>
                 : <>
-                    {playerPosition[index] === 'RIGHT' || playerPosition[index] === 'BOTTOM' ?
-                        <div className={`${playerPosition[index] === 'RIGHT' ? 'col-span-1' : 'col-span-4 h-32 ' + (pushUpBottom ? '-mt-16' : '')}`}>
+                    {checkPlayerPosition(currentPlayerPosition, ['RIGHT', 'BOTTOM']) ?
+                        <div className={`${checkPlayerPosition(currentPlayerPosition, ['RIGHT']) ? 'col-span-1' : 'col-span-4 h-32 ' + (pushUpBottom ? '-mt-16' : '')}`}>
                             <PlayedCardComponent playedCard={playedCard} />
                         </div> : null}
-                    <div
-                        className={`${playerPosition[index] === 'TOP' || playerPosition[index] === 'BOTTOM' ? 'col-span-4 mb-4'
-                            : ((collectedCards.length ? 'h-48' : 'h-24') + ' col-span-1 pt-1')}`}>
-                        {playerPosition[index] === 'TOP' ?
-                            <div className={`pt-1 mx-auto w-96 ${collectedCards.length ? 'h-48' : 'h-24'}`}>
-                                <div className="flex flex-col px-1">
-                                    <div className="grid grid-cols-2 xl:grid-cols-3 my-1">
-                                        <PlayerUsernameTag username={username} status={status} currentTeam={currentTeam} textAlign="text-left" showConfirmedTag={showConfirmedTag} currentTurn={currentTurn} isBottom={playerPosition[index] === 'BOTTOM'} />
-                                        <FaceDownCardContainer numFaceDown={numFaceDown} />
-                                    </div>
-                                </div>
-                                {collectedCards.length ? <CollectedCardsComponent collectedCards={collectedCards} /> : null}
-                            </div>
+                    <div className={`${checkPlayerPosition(currentPlayerPosition, ['TOP', 'BOTTOM']) ? 'col-span-4 mb-4'
+                        : ((collectedCards.length ? 'h-48' : 'h-24') + ' col-span-1 pt-1')}`}>
+                        {checkPlayerPosition(currentPlayerPosition, ['TOP']) ?
+                            <TopPlayer {...{ username, status, currentTeam, numFaceDown, showConfirmedTag, currentTurn, collectedCards }} />
                             : <>
                                 <div className="w-full flex flex-col px-1">
                                     <div className="grid grid-cols-2 xl:grid-cols-3 my-1">
-                                        {playerPosition[index] !== 'RIGHT' ? <>
-                                            <PlayerUsernameTag username={username} status={status} currentTeam={currentTeam} textAlign="text-left" showConfirmedTag={showConfirmedTag} currentTurn={currentTurn} isBottom={playerPosition[index] === 'BOTTOM'} />
-                                            <FaceDownCardContainer numFaceDown={numFaceDown} myFaceDownCards={playerPosition[index] === 'BOTTOM' ? myFaceDownCards : null} isLegalMoveWrapper={isLegalMoveWrapper} playCard={playCard} currentTurn={currentTurn} />
-                                        </> : <>
-                                            <FaceDownCardContainer numFaceDown={numFaceDown} />
-                                            <PlayerUsernameTag username={username} status={status} currentTeam={currentTeam} textAlign="text-right" showConfirmedTag={showConfirmedTag} currentTurn={currentTurn} isBottom={playerPosition[index] === 'BOTTOM'} />
-                                        </>}
+                                        {currentPlayerPosition !== 'RIGHT' ?
+                                            currentPlayerPosition === 'LEFT' ?
+                                                <LeftOrRightPlayerTag
+                                                    {...{ numFaceDown, username, status, currentTeam, showConfirmedTag, currentTurn }}
+                                                    left={true} />
+                                                : <BottomPlayerTag {...{ numFaceDown, username, status, currentTeam, showConfirmedTag, currentTurn, isLegalMoveWrapper, playCard, myFaceDownCards }} />
+                                            : <LeftOrRightPlayerTag
+                                                {...{ numFaceDown, username, status, currentTeam, showConfirmedTag, currentTurn }}
+                                                left={false} />
+                                        }
                                     </div>
                                 </div>
                                 {collectedCards.length ? <CollectedCardsComponent collectedCards={collectedCards} /> : null}
                             </>
                         }
                     </div>
-                    {playerPosition[index] === 'LEFT' || playerPosition[index] === 'TOP' ?
-                        <div className={`${playerPosition[index] === 'LEFT' ? 'col-span-1' : 'col-span-4 h-24'}`}>
+                    {checkPlayerPosition(currentPlayerPosition, ['LEFT', 'TOP']) ?
+                        <div className={`${checkPlayerPosition(currentPlayerPosition, ['LEFT']) ? 'col-span-1' : 'col-span-4 h-24'}`}>
                             <PlayedCardComponent playedCard={playedCard} />
                         </div> : null}
                 </>}
