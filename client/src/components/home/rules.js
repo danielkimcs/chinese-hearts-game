@@ -7,10 +7,10 @@ const Rules = ({ toggleRules }) => {
     return (
         <div onClick={toggleRules} class="h-screen bg-gray-100">
             <div onClick={stopPropagation} class="absolute w-full left-0 lg:w-1/2 lg:left-1/4 h-full p-12 overflow-y-auto bg-white shadow-lg">
-                <div class="absolute right-4">
+                <div class="absolute right-6">
                     <button type="button" onClick={toggleRules} class="mx-auto py-2 px-4 bg-yellow-500 text-white font-semibold shadow-md hover:bg-white hover:text-yellow-500 focus:outline-none">Close</button>
                 </div>
-                <article class="prose-xl lg:prose">
+                <article class="prose">
                     <h2>Game Rules</h2>
 
                     <p>Chinese Hearts (<a href="https://en.wikipedia.org/wiki/Gong_Zhu">Gong Zhu</a>) is a variation of the classic

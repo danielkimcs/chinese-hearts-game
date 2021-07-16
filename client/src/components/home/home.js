@@ -41,31 +41,33 @@ export const Home = () => {
                 <div className="container mx-auto flex-grow">
                     <form onSubmit={handleSubmit}>
                         <div className="w-1/2 mx-auto mt-12 flex flex-col">
-                            <div className="mx-auto">
+                            <div className="mx-auto text-center">
                                 <span className="font-bold text-2xl">
                                     Chinese Hearts
                                 </span>
                             </div>
-                            <div className="my-3 mx-auto w-64">
+                            <div className="my-3 mx-auto max-w-md">
                                 <span className="block text-sm text-gray-500">Enter username</span>
                                 <input className="w-full" type="text" value={username} onChange={e => setUsername(e.target.value)} />
                                 {usernameInvalid ? <span className="block text-sm text-gray-500 w-full break-normal text-red-400">
                                     Username must contain only letters and/or numbers!
                                 </span> : null}
                             </div>
-                            <div className="my-3 mx-auto w-64">
+                            <div className="my-3 mx-auto max-w-md">
                                 <span className="block text-sm text-gray-500">Enter game ID</span>
                                 <input className="w-full" type="text" value={room} onChange={e => setRoom(e.target.value)} />
                                 {roomInvalid ? <span className="block text-sm text-gray-500 w-full break-normal text-red-400">
                                     Game ID must contain only letters and/or numbers!
                                 </span> : null}
                             </div>
-                            <div className="my-2 mx-auto w-64">
+                            <div className="my-2 mx-auto max-w-md">
                                 <span className="block text-sm text-gray-500">Players who enter the same game ID play together!</span>
                             </div>
-                            <div className="mt-3 mx-auto w-64 flex flex-row">
-                                <button onClick={toggleRules} type="button" className="w-24 mx-auto py-2 px-4 bg-yellow-500 text-white font-semibold shadow-md hover:bg-white hover:text-yellow-500 focus:outline-none">Rules</button>
-                                <button className="w-24 mx-auto py-2 px-4 bg-green-400 text-white font-semibold shadow-md hover:bg-white hover:text-green-400 focus:outline-none" type="submit">Join!</button>
+                            <div className="mt-3 w-full">
+                                <div className="max-w-xs mx-auto flex flex-col items-center">
+                                    <button onClick={toggleRules} type="button" className="btn w-1/2 my-2 bg-yellow-500 hover:text-yellow-500">Rules</button>
+                                    <button className="btn w-1/2 my-2 bg-green-400 hover:text-green-400" type="submit">Join!</button>
+                                </div>
                             </div>
                         </div>
                     </form>
