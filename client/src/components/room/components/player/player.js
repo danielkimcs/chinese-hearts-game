@@ -80,7 +80,7 @@ const FaceDownCardContainer = ({ numFaceDown, myFaceDownCards, isLegalMoveWrappe
         <div className="col-span-1 relative">
             {numFaceDown > 0 ? myFaceDownCards ? myFaceDownCards.map((card, index) =>
                 <FaceDownCard key={index} card={card} index={index} isLegalMoveWrapper={isLegalMoveWrapper} playCard={playCard} currentTurn={currentTurn} />
-            ) : [...Array(numFaceDown)].map((ignore, index) =>
+            ) : [...Array(numFaceDown)].map((_, index) =>
                 <FaceDownCard key={index} card={null} index={index} />
             ) : <div className="h-20 w-16" />}
         </div>
