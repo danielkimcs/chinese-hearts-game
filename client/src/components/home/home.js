@@ -46,21 +46,21 @@ export const Home = () => {
                                     Chinese Hearts
                                 </span>
                             </div>
-                            <div className="my-3 mx-auto max-w-md">
+                            <div className="my-3 mx-auto" style={{ maxWidth: "193px" }}>
                                 <span className="block text-sm text-gray-500">Enter username</span>
                                 <input className="w-full" type="text" value={username} onChange={e => setUsername(e.target.value)} />
                                 {usernameInvalid ? <span className="block text-sm text-gray-500 w-full break-normal text-red-400">
                                     Username must contain only letters and/or numbers!
                                 </span> : null}
                             </div>
-                            <div className="my-3 mx-auto max-w-md">
+                            <div className="my-3 mx-auto" style={{ maxWidth: "193px" }}>
                                 <span className="block text-sm text-gray-500">Enter game ID</span>
                                 <input className="w-full" type="text" value={room} onChange={e => setRoom(e.target.value)} />
                                 {roomInvalid ? <span className="block text-sm text-gray-500 w-full break-normal text-red-400">
                                     Game ID must contain only letters and/or numbers!
                                 </span> : null}
                             </div>
-                            <div className="my-2 mx-auto max-w-md">
+                            <div className="my-2 mx-auto" style={{ maxWidth: "193px" }}>
                                 <p className="block text-sm text-gray-500">Players who enter the same game ID play together!</p>
                                 <p className="lg:hidden block text-sm text-gray-500 text-red-400">* Not yet optimized for small mobile screens! Playing on a wider screen is strongly advised.</p>
                             </div>
