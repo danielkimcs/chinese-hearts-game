@@ -1,4 +1,5 @@
 const Constants = require('../../shared/constants');
+const { isSpecialCard } = require('../../shared/utility');
 
 class Trick {
     constructor(startingPlayerId) {
@@ -28,7 +29,7 @@ class Trick {
         let playedCardsList = Object.values(this.playedCards)
             .filter(card =>
                 card.suit === 'HEART' ||
-                Constants.CARD_TYPE.SPECIAL.includes(card.rank + card.suit));
+                isSpecialCard(card));
 
         return playedCardsList;
     }

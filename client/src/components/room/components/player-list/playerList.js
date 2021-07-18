@@ -1,41 +1,12 @@
 import React from 'react';
 import { sendPlayedCard } from '../../../../utility/networking';
+import { isLegalMove, renderPlayerList } from '../../../../utility/helpers';
 import Player from './components/player';
 import PendingScreen from './components/pending-screen';
 import PlayerHand from './components/player-hand';
 
 const Constants = require('../../../../../../shared/constants');
 
-const isLegalMove = (currentTrick, currentHand, playedCard) => {
-    if (!currentTrick) return false;
-    if (!currentTrick.leadingSuit.length || playedCard.suit === currentTrick.leadingSuit) return true;
-    return !currentHand.filter(card => card.suit === currentTrick.leadingSuit).length;
-}
-
-const renderPlayerList = ({ myUsername, players }) => {
-    let teamPlayers = players.filter(player =>
-        player.currentTeam.length > 0
-        && player.nextPlayerUsername.length > 0);
-    if (teamPlayers.length !== Constants.REQUIRED_NUM_PLAYERS) {
-        return players.filter(player => player.status === Constants.PLAYER_STATUS.PLAYER_CONNECTED);
-    }
-    else { // Players are now divided in teams so display in proper playing order
-        // TO DO: styling clockwise order in perspective of current player
-        let usernameToPlayerObj = {};
-        teamPlayers.forEach(playerObj => usernameToPlayerObj[playerObj.username] = playerObj);
-
-        let myPlayerObj = teamPlayers.filter(player => player.username === myUsername)[0];
-        let sortedTeamPlayers = [myPlayerObj];
-        let currentPlayerUsername = sortedTeamPlayers[0].nextPlayerUsername;
-        while (currentPlayerUsername.localeCompare(sortedTeamPlayers[0].username) !== 0) {
-            let currentPlayerObj = usernameToPlayerObj[currentPlayerUsername];
-            sortedTeamPlayers.push(currentPlayerObj);
-            currentPlayerUsername = currentPlayerObj.nextPlayerUsername;
-        }
-
-        return sortedTeamPlayers;
-    }
-}
 
 export const PlayerList = ({ myUsername, players, roomState, currentCards, currentTrick, hasConfirmedHand, pause, startingCountdown }) => {
     const isLegalMoveWrapper = (playedCard) => {
