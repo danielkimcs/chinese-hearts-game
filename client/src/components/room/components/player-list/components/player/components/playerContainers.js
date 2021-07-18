@@ -1,4 +1,5 @@
 import React from "react";
+import CollectedCardsComponent from './collectedCardsComponent';
 import PlayerUsernameTag from './playerUsernameTag';
 import FaceDownCardContainer from './faceDownCardContainer';
 
