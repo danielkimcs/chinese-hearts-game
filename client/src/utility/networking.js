@@ -104,7 +104,3 @@ export const subscribeAskCard = (callback) => {
         return callback(null, trick);
     });
 }
-
-// export const sendMessage = (room, message) => {
-//     if (socket) socket.emit('chat', { message, room });
-// }
