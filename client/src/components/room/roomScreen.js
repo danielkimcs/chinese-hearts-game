@@ -15,7 +15,7 @@ const displayMessageValues = {
     [Constants.ROOM_JOIN_FAILURE_MSG_TYPE.ROOM_IN_PROGRESS]: 'This game is currently in progress!'
 }
 
-export const RoomScreen = (
+const RoomScreen = (
     {
         myUsername,
         displayStatus,
@@ -58,3 +58,5 @@ export const RoomScreen = (
                 </div>)}
     </>
 );
+
+export default RoomScreen;

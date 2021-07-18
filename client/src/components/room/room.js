@@ -14,7 +14,7 @@ import {
     subscribeAskCard
 } from '../../utility/networking';
 import { useParams, Redirect } from "react-router-dom";
-import { RoomScreen } from './roomScreen';
+import RoomScreen from './roomScreen';
 
 const Constants = require('../../../../shared/constants');
 

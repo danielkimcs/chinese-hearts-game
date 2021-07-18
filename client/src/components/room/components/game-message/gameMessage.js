@@ -1,4 +1,5 @@
 import React from "react";
+import GameMessageScreen from "./gameMessageScreen";
 const Constants = require('../../../../../../shared/constants');
 
 export const GameMessage = ({ players, roomState, roundHasFinished, currentTrick }) => {
@@ -23,12 +24,6 @@ export const GameMessage = ({ players, roomState, roundHasFinished, currentTrick
     }
 
     return (
-        <div className="absolute top-0 left-0">
-            <div className="w-80 h-24 p-2 flex">
-                <div className="m-auto font-semibold text-lg break-normal text-center">
-                    {renderGameMessage()}
-                </div>
-            </div>
-        </div>
+        <GameMessageScreen gameMessage={renderGameMessage()} />
     );
 }
