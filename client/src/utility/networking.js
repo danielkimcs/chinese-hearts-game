@@ -6,7 +6,7 @@ let socket;
 export const initiateSocket = ({ username, roomName }, callback) => {
     socket = io();
     if (socket && roomName) {
-        socket.emit(Constants.SERVER_EVENTS.ROOM_JOIN, { username, roomName }, (response) => {
+        socket.emit(Constants.LISTENER_TYPE.ROOM_JOIN, { username, roomName }, (response) => {
             callback(response);
         });
     } else {
@@ -21,31 +21,31 @@ export const disconnectSocket = () => {
 export const sendFaceDownCard = (card) => {
     if (!socket) return true;
 
-    socket.emit(Constants.SERVER_EVENTS.CARD_FACE_DOWN, card);
+    socket.emit(Constants.LISTENER_TYPE.CARD_FACE_DOWN, card);
 }
 
 export const sendPlayedCard = (card) => {
     if (!socket) return true;
 
-    socket.emit(Constants.SERVER_EVENTS.CARD_PLAYED, card);
+    socket.emit(Constants.LISTENER_TYPE.CARD_PLAYED, card);
 }
 
 export const sendHandConfirmation = () => {
     if (!socket) return true;
 
-    socket.emit(Constants.SERVER_EVENTS.FACE_DOWN_CONFIRMED);
+    socket.emit(Constants.LISTENER_TYPE.FACE_DOWN_CONFIRMED);
 }
 
 export const sendNewRoundConfirmation = () => {
     if (!socket) return true;
 
-    socket.emit(Constants.SERVER_EVENTS.START_NEW_ROUND_CONFIRMED);
+    socket.emit(Constants.LISTENER_TYPE.START_NEW_ROUND_CONFIRMED);
 }
 
 export const subscribeUpdatePlayerList = (callback) => {
     if (!socket) return true;
 
-    socket.on(Constants.CLIENT_API.UPDATE_PLAYER_LIST, playerObjects => {
+    socket.on(Constants.EVENT_TYPE.UPDATE_PLAYER_LIST, playerObjects => {
         return callback(null, playerObjects);
     });
 }
@@ -53,7 +53,7 @@ export const subscribeUpdatePlayerList = (callback) => {
 export const subscribeStartingCountdown = (callback) => {
     if (!socket) return true;
 
-    socket.on(Constants.CLIENT_API.GAME_STARTING_COUNTDOWN, counter => {
+    socket.on(Constants.EVENT_TYPE.GAME_STARTING_COUNTDOWN, counter => {
         return callback(null, counter);
     });
 }
@@ -61,7 +61,7 @@ export const subscribeStartingCountdown = (callback) => {
 export const subscribePause = (callback) => {
     if (!socket) return true;
 
-    socket.on(Constants.CLIENT_API.GAME_PAUSE, paused => {
+    socket.on(Constants.EVENT_TYPE.GAME_PAUSE, paused => {
         return callback(null, paused);
     });
 }
@@ -69,7 +69,7 @@ export const subscribePause = (callback) => {
 export const subscribeUpdatePlayerCards = (callback) => {
     if (!socket) return true;
 
-    socket.on(Constants.CLIENT_API.UPDATE_PLAYER_CARDS, cards => {
+    socket.on(Constants.EVENT_TYPE.UPDATE_PLAYER_CARDS, cards => {
         return callback(null, cards);
     });
 }
@@ -77,7 +77,7 @@ export const subscribeUpdatePlayerCards = (callback) => {
 export const subscribeRoomState = (callback) => {
     if (!socket) return true;
 
-    socket.on(Constants.CLIENT_API.UPDATE_ROOM_STATE, roomState => {
+    socket.on(Constants.EVENT_TYPE.UPDATE_ROOM_STATE, roomState => {
         return callback(null, roomState);
     });
 }
@@ -85,7 +85,7 @@ export const subscribeRoomState = (callback) => {
 export const subscribeAskConfirmHand = (callback) => {
     if (!socket) return true;
 
-    socket.on(Constants.CLIENT_API.ASK_CONFIRM_HAND, () => {
+    socket.on(Constants.EVENT_TYPE.ASK_CONFIRM_HAND, () => {
         return callback(null);
     });
 }
@@ -93,14 +93,14 @@ export const subscribeAskConfirmHand = (callback) => {
 export const subscribeAskStartRound = (callback) => {
     if (!socket) return true;
 
-    socket.on(Constants.CLIENT_API.ASK_START_ROUND, () => {
+    socket.on(Constants.EVENT_TYPE.ASK_START_ROUND, () => {
         return callback(null);
     });
 }
 
 export const subscribeAskCard = (callback) => {
     if (!socket) return true;
-    socket.on(Constants.CLIENT_API.TRICK_ASK_CARD, (trick) => {
+    socket.on(Constants.EVENT_TYPE.TRICK_ASK_CARD, (trick) => {
         return callback(null, trick);
     });
 }
