@@ -3,7 +3,7 @@ const Constants = require('../../shared/constants');
 const Player = require('./Player');
 const Card = require('./Card');
 const Trick = require('./Trick');
-const Events = require('./Events');
+const Events = require('../events/Events');
 
 const COUNTDOWN_INTERVAL_TIME = 1000;
 const ROUND_END_DELAY = 3500;
@@ -47,6 +47,33 @@ class Room {
         this.doubleHeartPoints = false;
 
         this.Events = new Events(this);
+
+        this.stateActions = undefined;
+
+        this.stateActions = {
+            [Constants.ROOM_STATES.ROOM_PAUSE]: this.roomPause,
+            [Constants.ROOM_STATES.ROOM_PENDING]: this.roomPending,
+            [Constants.ROOM_STATES.ROOM_COUNTDOWN]: this.roomCountdown,
+            [Constants.ROOM_STATES.ROOM_SETUP]: this.roomSetup,
+            [Constants.ROOM_STATES.ROUND_DEAL]: this.roundDeal,
+            [Constants.ROOM_STATES.ROUND_CONFIRM]: this.roundConfirm,
+            [Constants.ROOM_STATES.ROUND_START]: this.roundStart,
+            [Constants.ROOM_STATES.TRICK_PLAY]: this.trickPlay,
+            [Constants.ROOM_STATES.TRICK_PENDING]: this.trickPending,
+            [Constants.ROOM_STATES.TRICK_END]: this.trickEnd,
+            [Constants.ROOM_STATES.ROUND_END]: this.roundEnd
+        };
+        
+        this.bindStateActions();
+    }
+
+    // MAIN GAME LOGIC
+
+    // Constructor helper functions
+
+    bindStateActions() {
+        Object.keys(this.stateActions).forEach(state =>
+            this.stateActions[state] = this.stateActions[state].bind(this));
     }
 
     startState(newState) {
@@ -57,134 +84,149 @@ class Room {
 
         this.Events.updateRoomState();
 
-        switch (newState) {
-            case Constants.ROOM_STATES.ROOM_PAUSE:
-                this.togglePause(true);
-                break;
-            case Constants.ROOM_STATES.ROOM_PENDING:
-                if (this.countdownInterval) {
-                    clearInterval(this.countdownInterval);
-                    this.countdownInterval = undefined;
-                    this.Events.updateCountdown(null);
-                }
-                break;
-            case Constants.ROOM_STATES.ROOM_COUNTDOWN:
-                this.removeDisconnectedPlayers();
-                this.countdownInterval = this.beginStartingCountdown();
-                break;
-            case Constants.ROOM_STATES.ROOM_SETUP:
-                if (!this.isRoomFull()) {
-                    this.startState(Constants.ROOM_STATES.ROOM_PENDING);
-                    return;
-                }
-                let connectedPlayers = this.getConnectedPlayers();
-                Utility.shuffleArray(connectedPlayers);
-                this.determineTeams(connectedPlayers);
-                this.determinePlayerOrder(connectedPlayers);
+        this.stateActions[newState]();
+    }
 
-                this.Events.updatePlayerList();
-                this.startState(Constants.ROOM_STATES.ROUND_DEAL);
-                break;
-            case Constants.ROOM_STATES.ROUND_DEAL:
-                let roundPlayers = this.getConnectedPlayers();
+    // State action functions
 
-                // Clear collected cards from last round
-                roundPlayers.forEach(player => {
-                    player.collectedCards = [];
-                });
-                this.Events.updatePlayerList();
+    roomPause() {
+        this.togglePause(true);
+    }
 
-                let shuffledDeck = createShuffledDeck();
-                roundPlayers.forEach((player, index) => {
-                    player.currentHand = shuffledDeck.slice(index * shuffledDeck.length / 4, (index + 1) * shuffledDeck.length / 4);
-                    this.Events.updatePlayerCards(player);
-                });
-                this.startState(Constants.ROOM_STATES.ROUND_CONFIRM);
-                break;
-            case Constants.ROOM_STATES.ROUND_CONFIRM:
-                Object.keys(this.players).forEach(playerUsername => {
-                    let player = this.players[playerUsername];
-                    if (!player.hasConfirmedHand) {
-                        this.Events.askConfirmHand(player);
-                    }
-                });
-                break;
-            case Constants.ROOM_STATES.ROUND_START:
-                if (this.queenSpadeRecipient) {
-                    this.currentTrick = new Trick(this.queenSpadeRecipient.playerId);
-                } else if (!this.currentTrick) {
-                    let randomFirstPlayerId = Utility.chooseRandom(this.getConnectedPlayers()).playerId;
-                    this.currentTrick = new Trick(randomFirstPlayerId);
-                }
-                this.startState(Constants.ROOM_STATES.TRICK_PLAY);
-                break;
-            case Constants.ROOM_STATES.TRICK_PLAY:
-            case Constants.ROOM_STATES.TRICK_PENDING:
-                this.Events.updateCurrentTrick();
-                break;
-            case Constants.ROOM_STATES.TRICK_END:
-                if (!this.trickWinnerPlayer || !this.currentTrick.winnerPlayerName) {
-                    let winningPlayerId = this.currentTrick.determineWinner();
-                    let winningPlayer = Object.values(this.players).filter(player => player.playerId === winningPlayerId)[0];
-                    this.currentTrick.winnerPlayerName = winningPlayer.username;
-                    this.trickWinnerPlayer = winningPlayer;
-                }
-                this.Events.updateCurrentTrick();
-                let thisRoom = this;
-                if (!this.trickEndTimeoutStarted) {
-                    this.trickEndTimeoutStarted = true;
-                    setTimeout(function () {
-                        let newCollectedCards = thisRoom.currentTrick.collectCards();
-                        let winningPlayer = thisRoom.trickWinnerPlayer;
-                        if (newCollectedCards.filter(card => card.suit === 'SPADE' && card.rank === 'QUEEN').length) {
-                            thisRoom.queenSpadeRecipient = winningPlayer;
-                        }
-                        winningPlayer.collectedCards = winningPlayer.collectedCards.concat(newCollectedCards);
-                        thisRoom.Events.updatePlayerList();
-                        thisRoom.trickWinnerPlayer = undefined;
-
-                        if (winningPlayer.currentHand.length) {
-                            thisRoom.currentTrick = new Trick(winningPlayer.playerId);
-                            thisRoom.trickEndTimeoutStarted = false;
-                            thisRoom.startState(Constants.ROOM_STATES.TRICK_PLAY);
-                        } else {
-                            thisRoom.currentTrick = undefined;
-                            thisRoom.trickEndTimeoutStarted = false;
-                            thisRoom.getConnectedPlayers().forEach(player => {
-                                player.pointsOutdated = true;
-                            });
-                            thisRoom.startState(Constants.ROOM_STATES.ROUND_END);
-                        }
-                    }, ROUND_END_DELAY);
-                }
-                break;
-            case Constants.ROOM_STATES.ROUND_END:
-                this.Events.updateCurrentTrick(); // clears the table from last trick
-                this.getConnectedPlayers().forEach(player => {
-                    if (player.pointsOutdated) {
-                        player.points += player.calculatePoints(this.doubleHeartPoints);
-
-                        // Reset everything
-                        player.hasConfirmedHand = false;
-                        player.hasConfirmedStartRound = false;
-                        player.currentHand = [];
-                        player.numFaceDown = 0;
-                        player.pointsOutdated = false;
-                    }
-                });
-                this.doubleHeartPoints = false;
-                this.Events.updatePlayerList();
-
-                Object.keys(this.players).forEach(playerUsername => {
-                    let player = this.players[playerUsername];
-                    if (!player.hasConfirmedStartRound) {
-                        this.Events.askStartRound(player);
-                    }
-                });
-                break;
-            default:
+    roomPending() {
+        if (this.countdownInterval) {
+            clearInterval(this.countdownInterval);
+            this.countdownInterval = undefined;
+            this.Events.updateCountdown(null);
         }
     }
+
+    roomCountdown() {
+        // console.log(this);
+        this.removeDisconnectedPlayers();
+        this.countdownInterval = this.beginStartingCountdown();
+    }
+
+    roomSetup() {
+        if (!this.isRoomFull()) {
+            this.startState(Constants.ROOM_STATES.ROOM_PENDING);
+            return;
+        }
+        let connectedPlayers = this.getConnectedPlayers();
+        Utility.shuffleArray(connectedPlayers);
+        this.determineTeams(connectedPlayers);
+        this.determinePlayerOrder(connectedPlayers);
+
+        this.Events.updatePlayerList();
+        this.startState(Constants.ROOM_STATES.ROUND_DEAL);
+    }
+
+    roundDeal() {
+        let roundPlayers = this.getConnectedPlayers();
+
+        // Clear collected cards from last round
+        roundPlayers.forEach(player => {
+            player.collectedCards = [];
+        });
+        this.Events.updatePlayerList();
+
+        let shuffledDeck = createShuffledDeck();
+        roundPlayers.forEach((player, index) => {
+            player.currentHand = shuffledDeck.slice(index * shuffledDeck.length / 4, (index + 1) * shuffledDeck.length / 4);
+            this.Events.updatePlayerCards(player);
+        });
+        this.startState(Constants.ROOM_STATES.ROUND_CONFIRM);
+    }
+
+    roundConfirm() {
+        Object.keys(this.players).forEach(playerUsername => {
+            let player = this.players[playerUsername];
+            if (!player.hasConfirmedHand) {
+                this.Events.askConfirmHand(player);
+            }
+        });
+    }
+
+    roundStart() {
+        if (this.queenSpadeRecipient) {
+            this.currentTrick = new Trick(this.queenSpadeRecipient.playerId);
+        } else if (!this.currentTrick) {
+            let randomFirstPlayerId = Utility.chooseRandom(this.getConnectedPlayers()).playerId;
+            this.currentTrick = new Trick(randomFirstPlayerId);
+        }
+        this.startState(Constants.ROOM_STATES.TRICK_PLAY);
+    }
+
+    trickPlay() {
+        this.Events.updateCurrentTrick();
+    }
+
+    trickPending() {
+        this.Events.updateCurrentTrick();
+    }
+
+    trickEnd() {
+        if (!this.trickWinnerPlayer || !this.currentTrick.winnerPlayerName) {
+            let winningPlayerId = this.currentTrick.determineWinner();
+            let winningPlayer = Object.values(this.players).filter(player => player.playerId === winningPlayerId)[0];
+            this.currentTrick.winnerPlayerName = winningPlayer.username;
+            this.trickWinnerPlayer = winningPlayer;
+        }
+        this.Events.updateCurrentTrick();
+        if (!this.trickEndTimeoutStarted) {
+            this.trickEndTimeoutStarted = true;
+            setTimeout(function () {
+                let newCollectedCards = this.currentTrick.collectCards();
+                let winningPlayer = this.trickWinnerPlayer;
+                if (newCollectedCards.filter(card => card.suit === 'SPADE' && card.rank === 'QUEEN').length) {
+                    this.queenSpadeRecipient = winningPlayer;
+                }
+                winningPlayer.collectedCards = winningPlayer.collectedCards.concat(newCollectedCards);
+                this.Events.updatePlayerList();
+                this.trickWinnerPlayer = undefined;
+
+                if (winningPlayer.currentHand.length) {
+                    this.currentTrick = new Trick(winningPlayer.playerId);
+                    this.trickEndTimeoutStarted = false;
+                    this.startState(Constants.ROOM_STATES.TRICK_PLAY);
+                } else {
+                    this.currentTrick = undefined;
+                    this.trickEndTimeoutStarted = false;
+                    this.getConnectedPlayers().forEach(player => {
+                        player.pointsOutdated = true;
+                    });
+                    this.startState(Constants.ROOM_STATES.ROUND_END);
+                }
+            }.bind(this), ROUND_END_DELAY);
+        }
+    }
+
+    roundEnd() {
+        this.Events.updateCurrentTrick(); // clears the table from last trick
+        this.getConnectedPlayers().forEach(player => {
+            if (player.pointsOutdated) {
+                player.points += player.calculatePoints(this.doubleHeartPoints);
+
+                // Reset everything
+                player.hasConfirmedHand = false;
+                player.hasConfirmedStartRound = false;
+                player.currentHand = [];
+                player.numFaceDown = 0;
+                player.pointsOutdated = false;
+            }
+        });
+        this.doubleHeartPoints = false;
+        this.Events.updatePlayerList();
+
+        Object.keys(this.players).forEach(playerUsername => {
+            let player = this.players[playerUsername];
+            if (!player.hasConfirmedStartRound) {
+                this.Events.askStartRound(player);
+            }
+        });
+    }
+
+    // HELPER FUNCTIONS
 
     addPlayer(socket, username) {
         this.players[username] = new Player(socket, username);
@@ -299,21 +341,17 @@ class Room {
     }
 
     beginStartingCountdown() {
-        let currentRoom = this;
-        let roomEvents = currentRoom.Events;
-
         let countdown = 5;
         let startingCountdown = setInterval(function () {
-            // Be careful: 'this' does not refer to Room obj inside the interval
             if (countdown === 0) {
-                roomEvents.updateCountdown(null);
-                currentRoom.countdownInterval = undefined;
+                this.Events.updateCountdown(null);
+                this.countdownInterval = undefined;
                 clearInterval(startingCountdown);
-                currentRoom.startState(Constants.ROOM_STATES.ROOM_SETUP);
+                this.startState(Constants.ROOM_STATES.ROOM_SETUP);
             }
-            roomEvents.updateCountdown(countdown);
+            this.Events.updateCountdown(countdown);
             countdown--;
-        }, COUNTDOWN_INTERVAL_TIME);
+        }.bind(this), COUNTDOWN_INTERVAL_TIME);
 
         return startingCountdown;
     }
