@@ -2,9 +2,9 @@ const Constants = require('../../shared/constants');
 
 module.exports = function (rooms, socket, socketInfo) {
     socket.on('disconnect', () => {
-        console.log(socket.id, " disconnected");
         let { currentPlayerUsername, currentPlayerRoomName, currentPlayerJoined } = socketInfo;
         if (!currentPlayerUsername || !currentPlayerRoomName || !currentPlayerJoined) return;
+        console.log(socket.id, " disconnected");
         if (!(currentPlayerRoomName in rooms)) return;
 
         let room = rooms[currentPlayerRoomName];

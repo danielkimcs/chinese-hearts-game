@@ -2,7 +2,7 @@ const Room = require('../classes/Room');
 const Constants = require('../../shared/constants');
 
 
-module.exports = function (io, rooms, socket, socketInfo) {
+module.exports = function (rooms, socket, socketInfo, io) {
     socket.on(Constants.LISTENER_TYPE.ROOM_JOIN, ({ username, roomName }, callback) => {
         socketInfo.currentPlayerUsername = username;
         socketInfo.currentPlayerRoomName = roomName;

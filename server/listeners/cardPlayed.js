@@ -1,6 +1,6 @@
 const Constants = require('../../shared/constants');
 
-module.exports = function(rooms, socket, socketInfo) {
+module.exports = function (rooms, socket, socketInfo) {
     socket.on(Constants.LISTENER_TYPE.CARD_PLAYED, (card) => {
         let { currentPlayerUsername, currentPlayerRoomName, currentPlayerJoined } = socketInfo;
         if (!currentPlayerUsername || !currentPlayerRoomName || !currentPlayerJoined) return;
