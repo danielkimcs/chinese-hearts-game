@@ -1,32 +1,42 @@
 import React from 'react';
-import { sendPlayedCard } from '../../../../utility/networking';
 import { isLegalMove, renderPlayerList } from '../../../../utility/helpers';
 import Player from './components/player';
 import PendingScreen from './components/pending-screen';
 import PlayerHand from './components/player-hand';
 
+import { useDispatch, useSelector } from 'react-redux';
+import { getUsername, getCurrentCards } from '../../../../services/user/selectors';
+import { sendPlayedCard } from '../../../../services/user/actions';
+import { getRoomPlayers, getRoomCurrentTrick } from '../../../../services/room/selectors';
+
 const Constants = require('../../../../../../shared/constants');
 
 
-export const PlayerList = ({ myUsername, players, roomState, currentCards, currentTrick, hasConfirmedHand, pause, startingCountdown }) => {
+export const PlayerList = ({ roomState }) => {
+    const dispatch = useDispatch();
+
+    const myUsername = useSelector(getUsername);
+    const players = useSelector(getRoomPlayers);
+    const currentCards = useSelector(getCurrentCards);
+    const currentTrick = useSelector(getRoomCurrentTrick);
+
     const isLegalMoveWrapper = (playedCard) => {
         if (playedCard == null) return false;
         return isLegalMove(currentTrick, currentCards, playedCard);
     }
 
     const playCard = (card) => {
-        sendPlayedCard(card);
+        dispatch(sendPlayedCard(card));
     }
 
     let renderedPlayerList = renderPlayerList({ myUsername, players });
     let playerListOrdered = [renderedPlayerList[2], renderedPlayerList[1], renderedPlayerList[3], renderedPlayerList[0]];
-    let myPlayerId = players.filter(player => player.username === myUsername)[0].playerId;
 
     return (
         <div className="px-8">
             {roomState === Constants.ROOM_STATES.ROOM_PENDING
                 || roomState === Constants.ROOM_STATES.ROOM_COUNTDOWN ?
-                <PendingScreen {...{ startingCountdown, renderedPlayerList }} />
+                <PendingScreen renderedPlayerList={renderedPlayerList} />
                 : <div className="grid grid-cols-4">
                     {playerListOrdered.map((player, index) =>
                         <Player
@@ -43,8 +53,7 @@ export const PlayerList = ({ myUsername, players, roomState, currentCards, curre
                     )}
                 </div>}
             {currentCards.length ?
-                <PlayerHand {...{ currentCards, playCard, pause, myPlayerId, isLegalMove, currentTrick }}
-                    hasNotConfirmedHand={roomState === Constants.ROOM_STATES.ROUND_CONFIRM && !hasConfirmedHand} /> : null}
+                <PlayerHand {...{ currentCards, playCard, currentTrick }} /> : null}
         </div>
     );
 }

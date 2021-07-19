@@ -1,8 +1,14 @@
 import React from "react";
 import GameMessageScreen from "./gameMessageScreen";
+import { useSelector } from "react-redux";
+import { getRoomPlayers, getRoomState, getRoomCurrentTrick } from "../../../../services/room/selectors";
 const Constants = require('../../../../../../shared/constants');
 
-export const GameMessage = ({ players, roomState, roundHasFinished, currentTrick }) => {
+export const GameMessage = ({ roundHasFinished }) => {
+    const players = useSelector(getRoomPlayers);
+    const roomState = useSelector(getRoomState);
+    const currentTrick = useSelector(getRoomCurrentTrick);
+
     const renderGameMessage = () => {
         if (roomState === Constants.ROOM_STATES.ROUND_CONFIRM) {
             return "Waiting for players to place any special cards face down and confirm their hand...";

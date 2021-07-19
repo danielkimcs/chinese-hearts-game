@@ -1,27 +1,31 @@
 import React from "react";
+import { isLegalMove } from "../../../../../../utility/helpers";
 import { compareCards } from '../../../../../../utility/helpers';
-import { sendFaceDownCard } from '../../../../../../utility/networking';
 import PlayableCard from './playableCard';
+
+import { useDispatch, useSelector } from "react-redux";
+import { sendFaceDownCard } from "../../../../../../services/user/actions";
+import { getConfirmedHandStatus, getPlayerId } from "../../../../../../services/user/selectors";
+import { getRoomPaused, getRoomState } from "../../../../../../services/room/selectors";
+
 const Utility = require('../../../../../../../../shared/utility');
+const Constants = require('../../../../../../../../shared/constants');
 
-
-export const PlayerHand = ({
-    currentCards,
-    playCard,
-    pause,
-    myPlayerId,
-    isLegalMove,
-    currentTrick,
-    hasNotConfirmedHand
-}) => {
-    let sortedCurrentCards = currentCards.sort(compareCards);
+export const PlayerHand = ({ currentCards, playCard, currentTrick }) => {
+    const dispatch = useDispatch();
+    const pause = useSelector(getRoomPaused);
+    const roomState = useSelector(getRoomState);
+    const hasConfirmedHand = useSelector(getConfirmedHandStatus);
+    const myPlayerId = useSelector(getPlayerId);
+    const hasNotConfirmedHand = roomState === Constants.ROOM_STATES.ROUND_CONFIRM && !hasConfirmedHand;
+    const sortedCurrentCards = currentCards.sort(compareCards);
 
     const setFaceDown = (card) => {
         if (card.faceDown) return;
         if (!Utility.isSpecialCard(card)) return;
         if (pause) return;
 
-        sendFaceDownCard(card);
+        dispatch(sendFaceDownCard(card));
     }
 
     return (
