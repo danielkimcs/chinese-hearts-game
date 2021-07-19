@@ -1,5 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { Provider } from 'react-redux';
+import store from './services/store';
 import './index-base.css';
 import './index-components.css';
 import './index-utilities.css';
@@ -11,9 +13,9 @@ Promise.all([
   downloadAssets(),
 ]).then(() => {
   ReactDOM.render(
-    <React.StrictMode>
+    <Provider store={store}>
       <App />
-    </React.StrictMode>,
+    </Provider>,
     document.getElementById('root')
   );
 });

@@ -1,16 +1,10 @@
 import React from "react";
 import { getCardImage } from "../../../../../../../shared/assets";
-const Constants = require('../../../../../../../../../shared/constants');
+import { compareCards } from "../../../../../../../utility/helpers";
 
 
 const CollectedCardsComponent = ({ collectedCards }) => {
-    let sortedCollectedCards = collectedCards.sort((card1, card2) => {
-        if (card1.suit !== card2.suit) {
-            return Constants.CARD_TYPE.SUITS[card2.suit] - Constants.CARD_TYPE.SUITS[card1.suit];
-        } else {
-            return Constants.CARD_TYPE.RANKS[card2.rank] - Constants.CARD_TYPE.RANKS[card1.rank];
-        }
-    });
+    let sortedCollectedCards = collectedCards.sort(compareCards);
     return (
         <div className="col-span-1 relative mt-5">
             {sortedCollectedCards.map((card, index) =>

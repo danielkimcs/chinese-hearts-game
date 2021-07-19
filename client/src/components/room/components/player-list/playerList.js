@@ -1,61 +1,42 @@
 import React from 'react';
-import { sendPlayedCard } from '../../../../utility/networking';
+import { isLegalMove, renderPlayerList } from '../../../../utility/helpers';
 import Player from './components/player';
 import PendingScreen from './components/pending-screen';
 import PlayerHand from './components/player-hand';
 
+import { useDispatch, useSelector } from 'react-redux';
+import { getUsername, getCurrentCards } from '../../../../services/user/selectors';
+import { sendPlayedCard } from '../../../../services/user/actions';
+import { getRoomPlayers, getRoomCurrentTrick } from '../../../../services/room/selectors';
+
 const Constants = require('../../../../../../shared/constants');
 
-const isLegalMove = (currentTrick, currentHand, playedCard) => {
-    if (!currentTrick) return false;
-    if (!currentTrick.leadingSuit.length || playedCard.suit === currentTrick.leadingSuit) return true;
-    return !currentHand.filter(card => card.suit === currentTrick.leadingSuit).length;
-}
 
-const renderPlayerList = ({ myUsername, players }) => {
-    let teamPlayers = players.filter(player =>
-        player.currentTeam.length > 0
-        && player.nextPlayerUsername.length > 0);
-    if (teamPlayers.length !== Constants.REQUIRED_NUM_PLAYERS) {
-        return players.filter(player => player.status === Constants.PLAYER_STATUS.PLAYER_CONNECTED);
-    }
-    else { // Players are now divided in teams so display in proper playing order
-        // TO DO: styling clockwise order in perspective of current player
-        let usernameToPlayerObj = {};
-        teamPlayers.forEach(playerObj => usernameToPlayerObj[playerObj.username] = playerObj);
+export const PlayerList = ({ roomState }) => {
+    const dispatch = useDispatch();
 
-        let myPlayerObj = teamPlayers.filter(player => player.username === myUsername)[0];
-        let sortedTeamPlayers = [myPlayerObj];
-        let currentPlayerUsername = sortedTeamPlayers[0].nextPlayerUsername;
-        while (currentPlayerUsername.localeCompare(sortedTeamPlayers[0].username) !== 0) {
-            let currentPlayerObj = usernameToPlayerObj[currentPlayerUsername];
-            sortedTeamPlayers.push(currentPlayerObj);
-            currentPlayerUsername = currentPlayerObj.nextPlayerUsername;
-        }
+    const myUsername = useSelector(getUsername);
+    const players = useSelector(getRoomPlayers);
+    const currentCards = useSelector(getCurrentCards);
+    const currentTrick = useSelector(getRoomCurrentTrick);
 
-        return sortedTeamPlayers;
-    }
-}
-
-export const PlayerList = ({ myUsername, players, roomState, currentCards, currentTrick, hasConfirmedHand, pause, startingCountdown }) => {
     const isLegalMoveWrapper = (playedCard) => {
         if (playedCard == null) return false;
         return isLegalMove(currentTrick, currentCards, playedCard);
     }
 
     const playCard = (card) => {
-        sendPlayedCard(card);
+        dispatch(sendPlayedCard(card));
     }
 
     let renderedPlayerList = renderPlayerList({ myUsername, players });
     let playerListOrdered = [renderedPlayerList[2], renderedPlayerList[1], renderedPlayerList[3], renderedPlayerList[0]];
-    let myPlayerId = players.filter(player => player.username === myUsername)[0].playerId;
 
     return (
         <div className="px-8">
             {roomState === Constants.ROOM_STATES.ROOM_PENDING
                 || roomState === Constants.ROOM_STATES.ROOM_COUNTDOWN ?
-                <PendingScreen {...{ startingCountdown, renderedPlayerList }} />
+                <PendingScreen renderedPlayerList={renderedPlayerList} />
                 : <div className="grid grid-cols-4">
                     {playerListOrdered.map((player, index) =>
                         <Player
@@ -72,8 +53,7 @@ export const PlayerList = ({ myUsername, players, roomState, currentCards, curre
                     )}
                 </div>}
             {currentCards.length ?
-                <PlayerHand {...{ currentCards, playCard, pause, myPlayerId, isLegalMove, currentTrick }}
-                    hasNotConfirmedHand={roomState === Constants.ROOM_STATES.ROUND_CONFIRM && !hasConfirmedHand} /> : null}
+                <PlayerHand {...{ currentCards, playCard, currentTrick }} /> : null}
         </div>
     );
 }

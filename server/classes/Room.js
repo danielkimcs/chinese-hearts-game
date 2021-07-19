@@ -3,6 +3,7 @@ const Constants = require('../../shared/constants');
 const Player = require('./Player');
 const Card = require('./Card');
 const Trick = require('./Trick');
+const Events = require('../events/Events');
 
 const COUNTDOWN_INTERVAL_TIME = 1000;
 const ROUND_END_DELAY = 3500;
@@ -45,7 +46,34 @@ class Room {
         this.trickEndTimeoutStarted = false;
         this.doubleHeartPoints = false;
 
-        this.ClientAPI = new ClientAPI(this);
+        this.Events = new Events(this);
+
+        this.stateActions = undefined;
+
+        this.stateActions = {
+            [Constants.ROOM_STATES.ROOM_PAUSE]: this.roomPause,
+            [Constants.ROOM_STATES.ROOM_PENDING]: this.roomPending,
+            [Constants.ROOM_STATES.ROOM_COUNTDOWN]: this.roomCountdown,
+            [Constants.ROOM_STATES.ROOM_SETUP]: this.roomSetup,
+            [Constants.ROOM_STATES.ROUND_DEAL]: this.roundDeal,
+            [Constants.ROOM_STATES.ROUND_CONFIRM]: this.roundConfirm,
+            [Constants.ROOM_STATES.ROUND_START]: this.roundStart,
+            [Constants.ROOM_STATES.TRICK_PLAY]: this.trickPlay,
+            [Constants.ROOM_STATES.TRICK_PENDING]: this.trickPending,
+            [Constants.ROOM_STATES.TRICK_END]: this.trickEnd,
+            [Constants.ROOM_STATES.ROUND_END]: this.roundEnd
+        };
+        
+        this.bindStateActions();
+    }
+
+    // MAIN GAME LOGIC
+
+    // Constructor helper functions
+
+    bindStateActions() {
+        Object.keys(this.stateActions).forEach(state =>
+            this.stateActions[state] = this.stateActions[state].bind(this));
     }
 
     startState(newState) {
@@ -54,141 +82,156 @@ class Room {
             this.currentState = newState;
         }
 
-        this.ClientAPI.updateRoomState();
+        this.Events.updateRoomState();
 
-        switch (newState) {
-            case Constants.ROOM_STATES.ROOM_PAUSE:
-                this.togglePause(true);
-                break;
-            case Constants.ROOM_STATES.ROOM_PENDING:
-                if (this.countdownInterval) {
-                    clearInterval(this.countdownInterval);
-                    this.countdownInterval = undefined;
-                    this.ClientAPI.updateCountdown(null);
-                }
-                break;
-            case Constants.ROOM_STATES.ROOM_COUNTDOWN:
-                this.removeDisconnectedPlayers();
-                this.countdownInterval = this.beginStartingCountdown();
-                break;
-            case Constants.ROOM_STATES.ROOM_SETUP:
-                if (!this.isRoomFull()) {
-                    this.startState(Constants.ROOM_STATES.ROOM_PENDING);
-                    return;
-                }
-                let connectedPlayers = this.getConnectedPlayers();
-                Utility.shuffleArray(connectedPlayers);
-                this.determineTeams(connectedPlayers);
-                this.determinePlayerOrder(connectedPlayers);
+        this.stateActions[newState]();
+    }
 
-                this.ClientAPI.updatePlayerList();
-                this.startState(Constants.ROOM_STATES.ROUND_DEAL);
-                break;
-            case Constants.ROOM_STATES.ROUND_DEAL:
-                let roundPlayers = this.getConnectedPlayers();
+    // State action functions
 
-                // Clear collected cards from last round
-                roundPlayers.forEach(player => {
-                    player.collectedCards = [];
-                });
-                this.ClientAPI.updatePlayerList();
+    roomPause() {
+        this.togglePause(true);
+    }
 
-                let shuffledDeck = createShuffledDeck();
-                roundPlayers.forEach((player, index) => {
-                    player.currentHand = shuffledDeck.slice(index * shuffledDeck.length / 4, (index + 1) * shuffledDeck.length / 4);
-                    this.ClientAPI.updatePlayerCards(player);
-                });
-                this.startState(Constants.ROOM_STATES.ROUND_CONFIRM);
-                break;
-            case Constants.ROOM_STATES.ROUND_CONFIRM:
-                Object.keys(this.players).forEach(playerUsername => {
-                    let player = this.players[playerUsername];
-                    if (!player.hasConfirmedHand) {
-                        this.ClientAPI.askConfirmHand(player);
-                    }
-                });
-                break;
-            case Constants.ROOM_STATES.ROUND_START:
-                if (this.queenSpadeRecipient) {
-                    this.currentTrick = new Trick(this.queenSpadeRecipient.playerId);
-                } else if (!this.currentTrick) {
-                    let randomFirstPlayerId = Utility.chooseRandom(this.getConnectedPlayers()).playerId;
-                    this.currentTrick = new Trick(randomFirstPlayerId);
-                }
-                this.startState(Constants.ROOM_STATES.TRICK_PLAY);
-                break;
-            case Constants.ROOM_STATES.TRICK_PLAY:
-            case Constants.ROOM_STATES.TRICK_PENDING:
-                this.ClientAPI.updateCurrentTrick();
-                break;
-            case Constants.ROOM_STATES.TRICK_END:
-                if (!this.trickWinnerPlayer || !this.currentTrick.winnerPlayerName) {
-                    let winningPlayerId = this.currentTrick.determineWinner();
-                    let winningPlayer = Object.values(this.players).filter(player => player.playerId === winningPlayerId)[0];
-                    this.currentTrick.winnerPlayerName = winningPlayer.username;
-                    this.trickWinnerPlayer = winningPlayer;
-                }
-                this.ClientAPI.updateCurrentTrick();
-                let thisRoom = this;
-                if (!this.trickEndTimeoutStarted) {
-                    this.trickEndTimeoutStarted = true;
-                    setTimeout(function () {
-                        let newCollectedCards = thisRoom.currentTrick.collectCards();
-                        let winningPlayer = thisRoom.trickWinnerPlayer;
-                        if (newCollectedCards.filter(card => card.suit === 'SPADE' && card.rank === 'QUEEN').length) {
-                            thisRoom.queenSpadeRecipient = winningPlayer;
-                        }
-                        winningPlayer.collectedCards = winningPlayer.collectedCards.concat(newCollectedCards);
-                        thisRoom.ClientAPI.updatePlayerList();
-                        thisRoom.trickWinnerPlayer = undefined;
-
-                        if (winningPlayer.currentHand.length) {
-                            thisRoom.currentTrick = new Trick(winningPlayer.playerId);
-                            thisRoom.trickEndTimeoutStarted = false;
-                            thisRoom.startState(Constants.ROOM_STATES.TRICK_PLAY);
-                        } else {
-                            thisRoom.currentTrick = undefined;
-                            thisRoom.trickEndTimeoutStarted = false;
-                            thisRoom.getConnectedPlayers().forEach(player => {
-                                player.pointsOutdated = true;
-                            });
-                            thisRoom.startState(Constants.ROOM_STATES.ROUND_END);
-                        }
-                    }, ROUND_END_DELAY);
-                }
-                break;
-            case Constants.ROOM_STATES.ROUND_END:
-                this.ClientAPI.updateCurrentTrick(); // clears the table from last trick
-                this.getConnectedPlayers().forEach(player => {
-                    if (player.pointsOutdated) {
-                        player.points += player.calculatePoints(this.doubleHeartPoints);
-
-                        // Reset everything
-                        player.hasConfirmedHand = false;
-                        player.hasConfirmedStartRound = false;
-                        player.currentHand = [];
-                        player.numFaceDown = 0;
-                        player.pointsOutdated = false;
-                    }
-                });
-                this.doubleHeartPoints = false;
-                this.ClientAPI.updatePlayerList();
-
-                Object.keys(this.players).forEach(playerUsername => {
-                    let player = this.players[playerUsername];
-                    if (!player.hasConfirmedStartRound) {
-                        this.ClientAPI.askStartRound(player);
-                    }
-                });
-                break;
-            default:
+    roomPending() {
+        if (this.countdownInterval) {
+            clearInterval(this.countdownInterval);
+            this.countdownInterval = undefined;
+            this.Events.updateCountdown(null);
         }
     }
+
+    roomCountdown() {
+        // console.log(this);
+        this.removeDisconnectedPlayers();
+        this.countdownInterval = this.beginStartingCountdown();
+    }
+
+    roomSetup() {
+        if (!this.isRoomFull()) {
+            this.startState(Constants.ROOM_STATES.ROOM_PENDING);
+            return;
+        }
+        let connectedPlayers = this.getConnectedPlayers();
+        Utility.shuffleArray(connectedPlayers);
+        this.determineTeams(connectedPlayers);
+        this.determinePlayerOrder(connectedPlayers);
+
+        this.Events.updatePlayerList();
+        this.startState(Constants.ROOM_STATES.ROUND_DEAL);
+    }
+
+    roundDeal() {
+        let roundPlayers = this.getConnectedPlayers();
+
+        // Clear collected cards from last round
+        roundPlayers.forEach(player => {
+            player.collectedCards = [];
+        });
+        this.Events.updatePlayerList();
+
+        let shuffledDeck = createShuffledDeck();
+        roundPlayers.forEach((player, index) => {
+            player.currentHand = shuffledDeck.slice(index * shuffledDeck.length / 4, (index + 1) * shuffledDeck.length / 4);
+            this.Events.updatePlayerCards(player);
+        });
+        this.startState(Constants.ROOM_STATES.ROUND_CONFIRM);
+    }
+
+    roundConfirm() {
+        Object.keys(this.players).forEach(playerUsername => {
+            let player = this.players[playerUsername];
+            if (!player.hasConfirmedHand) {
+                this.Events.askConfirmHand(player);
+            }
+        });
+    }
+
+    roundStart() {
+        if (this.queenSpadeRecipient) {
+            this.currentTrick = new Trick(this.queenSpadeRecipient.playerId);
+        } else if (!this.currentTrick) {
+            let randomFirstPlayerId = Utility.chooseRandom(this.getConnectedPlayers()).playerId;
+            this.currentTrick = new Trick(randomFirstPlayerId);
+        }
+        this.startState(Constants.ROOM_STATES.TRICK_PLAY);
+    }
+
+    trickPlay() {
+        this.Events.updateCurrentTrick();
+    }
+
+    trickPending() {
+        this.Events.updateCurrentTrick();
+    }
+
+    trickEnd() {
+        if (!this.trickWinnerPlayer || !this.currentTrick.winnerPlayerName) {
+            let winningPlayerId = this.currentTrick.determineWinner();
+            let winningPlayer = Object.values(this.players).filter(player => player.playerId === winningPlayerId)[0];
+            this.currentTrick.winnerPlayerName = winningPlayer.username;
+            this.trickWinnerPlayer = winningPlayer;
+        }
+        this.Events.updateCurrentTrick();
+        if (!this.trickEndTimeoutStarted) {
+            this.trickEndTimeoutStarted = true;
+            setTimeout(function () {
+                let newCollectedCards = this.currentTrick.collectCards();
+                let winningPlayer = this.trickWinnerPlayer;
+                if (newCollectedCards.filter(card => card.suit === 'SPADE' && card.rank === 'QUEEN').length) {
+                    this.queenSpadeRecipient = winningPlayer;
+                }
+                winningPlayer.collectedCards = winningPlayer.collectedCards.concat(newCollectedCards);
+                this.Events.updatePlayerList();
+                this.trickWinnerPlayer = undefined;
+
+                if (winningPlayer.currentHand.length) {
+                    this.currentTrick = new Trick(winningPlayer.playerId);
+                    this.trickEndTimeoutStarted = false;
+                    this.startState(Constants.ROOM_STATES.TRICK_PLAY);
+                } else {
+                    this.currentTrick = undefined;
+                    this.trickEndTimeoutStarted = false;
+                    this.getConnectedPlayers().forEach(player => {
+                        player.pointsOutdated = true;
+                    });
+                    this.startState(Constants.ROOM_STATES.ROUND_END);
+                }
+            }.bind(this), ROUND_END_DELAY);
+        }
+    }
+
+    roundEnd() {
+        this.Events.updateCurrentTrick(); // clears the table from last trick
+        this.getConnectedPlayers().forEach(player => {
+            if (player.pointsOutdated) {
+                player.points += player.calculatePoints(this.doubleHeartPoints);
+
+                // Reset everything
+                player.hasConfirmedHand = false;
+                player.hasConfirmedStartRound = false;
+                player.currentHand = [];
+                player.numFaceDown = 0;
+                player.pointsOutdated = false;
+            }
+        });
+        this.doubleHeartPoints = false;
+        this.Events.updatePlayerList();
+
+        Object.keys(this.players).forEach(playerUsername => {
+            let player = this.players[playerUsername];
+            if (!player.hasConfirmedStartRound) {
+                this.Events.askStartRound(player);
+            }
+        });
+    }
+
+    // HELPER FUNCTIONS
 
     addPlayer(socket, username) {
         this.players[username] = new Player(socket, username);
         console.log(username, this.players[username].playerId);
-        this.ClientAPI.updatePlayerList();
+        this.Events.updatePlayerList();
     }
 
     replacePlayer(playerToReplace, newSocket, newUsername) {
@@ -198,30 +241,30 @@ class Room {
         playerToReplace.socket = newSocket;
         playerToReplace.status = Constants.PLAYER_STATUS.PLAYER_CONNECTED;
         this.players[newUsername] = playerToReplace;
-        this.ClientAPI.updatePlayerList();
+        this.Events.updatePlayerList();
     }
 
     updateClient(username) {
         let player = this.players[username];
 
-        this.ClientAPI.updateRoomState(player);
+        this.Events.updateRoomState(player);
 
         if (this.gamePaused
             && this.currentState !== Constants.ROOM_STATES.ROOM_PENDING
             && this.currentState !== Constants.ROOM_STATES.ROOM_COUNTDOWN) {
-            this.ClientAPI.pauseGame(true, player);
+            this.Events.pauseGame(true, player);
         }
 
         switch (this.currentState) {
             case Constants.ROOM_STATES.TRICK_PLAY:
             case Constants.ROOM_STATES.TRICK_PENDING:
-                this.ClientAPI.updateCurrentTrick();
+                this.Events.updateCurrentTrick();
             case Constants.ROOM_STATES.ROUND_END:
             case Constants.ROOM_STATES.TRICK_END:
             case Constants.ROOM_STATES.ROUND_DEAL:
             case Constants.ROOM_STATES.ROUND_CONFIRM:
             case Constants.ROOM_STATES.ROUND_START:
-                this.ClientAPI.updatePlayerCards(player);
+                this.Events.updatePlayerCards(player);
                 break;
         }
 
@@ -231,7 +274,7 @@ class Room {
         if (!(username in this.players)) return;
         this.players[username].status = Constants.PLAYER_STATUS.PLAYER_DISCONNECTED;
         this.players[username].socket = null;
-        this.ClientAPI.updatePlayerList();
+        this.Events.updatePlayerList();
     }
 
     removeDisconnectedPlayers() {
@@ -241,7 +284,7 @@ class Room {
                 delete this.players[username];
             }
         });
-        this.ClientAPI.updatePlayerList();
+        this.Events.updatePlayerList();
     }
 
     fetchDisconnectedPlayer() {
@@ -298,21 +341,17 @@ class Room {
     }
 
     beginStartingCountdown() {
-        let currentRoom = this;
-        let clientAPI = currentRoom.ClientAPI;
-
         let countdown = 5;
         let startingCountdown = setInterval(function () {
-            // Be careful: 'this' does not refer to Room obj inside the interval
             if (countdown === 0) {
-                clientAPI.updateCountdown(null);
-                currentRoom.countdownInterval = undefined;
+                this.Events.updateCountdown(null);
+                this.countdownInterval = undefined;
                 clearInterval(startingCountdown);
-                currentRoom.startState(Constants.ROOM_STATES.ROOM_SETUP);
+                this.startState(Constants.ROOM_STATES.ROOM_SETUP);
             }
-            clientAPI.updateCountdown(countdown);
+            this.Events.updateCountdown(countdown);
             countdown--;
-        }, COUNTDOWN_INTERVAL_TIME);
+        }.bind(this), COUNTDOWN_INTERVAL_TIME);
 
         return startingCountdown;
     }
@@ -329,70 +368,11 @@ class Room {
     }
 
     togglePause(paused) {
-        this.ClientAPI.pauseGame(paused);
+        this.Events.pauseGame(paused);
         this.gamePaused = paused;
     }
 }
 
-class ClientAPI {
-    constructor(parent) {
-        this.room = parent;
-    }
 
-    updatePlayerList() {
-        let playerObjects = Object.values(this.room.players).map(playerObj => {
-            return {
-                username: playerObj.username,
-                playerId: playerObj.playerId,
-                status: playerObj.status,
-                currentTeam: playerObj.currentTeam,
-                nextPlayerUsername: playerObj.nextPlayer ? playerObj.nextPlayer.username : "",
-                hasConfirmedHand: playerObj.hasConfirmedHand,
-                hasConfirmedStartRound: playerObj.hasConfirmedStartRound,
-                numFaceDown: playerObj.numFaceDown,
-                collectedCards: playerObj.collectedCards,
-                points: playerObj.points,
-            }
-        });
-        this.room.io.to(this.room.roomName).emit(Constants.CLIENT_API.UPDATE_PLAYER_LIST, playerObjects);
-    }
-
-    updateCountdown(countdown) {
-        this.room.io.in(this.room.roomName).emit(Constants.CLIENT_API.GAME_STARTING_COUNTDOWN, countdown);
-    }
-
-    updateRoomState(player = null) {
-        let roomDestination = player ? player.socket.id : this.room.roomName;
-        this.room.io.in(roomDestination).emit(Constants.CLIENT_API.UPDATE_ROOM_STATE, this.room.currentState);
-    }
-
-    pauseGame(paused, player = null) {
-        let roomDestination = player ? player.socket.id : this.room.roomName;
-        this.room.io.in(roomDestination).emit(Constants.CLIENT_API.GAME_PAUSE, paused);
-    }
-
-    updatePlayerCards(player) {
-        if (!player
-            || !player.socket
-            || !player.socket.id
-            || player.status !== Constants.PLAYER_STATUS.PLAYER_CONNECTED) return;
-        this.room.io.in(player.socket.id).emit(Constants.CLIENT_API.UPDATE_PLAYER_CARDS, player.currentHand);
-    }
-
-    askConfirmHand(player = null) {
-        let roomDestination = player ? player.socket.id : this.room.roomName;
-        this.room.io.in(roomDestination).emit(Constants.CLIENT_API.ASK_CONFIRM_HAND);
-    }
-
-    askStartRound(player = null) {
-        let roomDestination = player ? player.socket.id : this.room.roomName;
-        this.room.io.in(roomDestination).emit(Constants.CLIENT_API.ASK_START_ROUND);
-    }
-
-    updateCurrentTrick() {
-        let currentTrick = this.room.currentTrick;
-        this.room.io.in(this.room.roomName).emit(Constants.CLIENT_API.TRICK_ASK_CARD, currentTrick);
-    }
-}
 
 module.exports = Room;

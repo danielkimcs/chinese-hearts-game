@@ -1,4 +1,7 @@
 import React from "react";
+import { useSelector } from "react-redux";
+import { getUsername } from "../../../../services/user/selectors";
+import { getRoomPlayers } from "../../../../services/room/selectors";
 const Constants = require('../../../../../../shared/constants');
 
 const teamLeaderboardSettings = {
@@ -7,7 +10,10 @@ const teamLeaderboardSettings = {
     disconnectedColor: "bg-gray-100"
 }
 
-export const Leaderboard = ({ myUsername, players }) => {
+export const Leaderboard = () => {
+    const myUsername = useSelector(getUsername);
+    const players = useSelector(getRoomPlayers);
+
     if (!players || !(players.length === 4)) return null;
     return (
         <div className="w-80 h-24 p-2 flex">
