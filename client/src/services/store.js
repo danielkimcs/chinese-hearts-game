@@ -4,4 +4,13 @@ import socketMiddleware from './socketMiddleware';
 import rootReducer from './rootReducer';
 import { composeWithDevTools } from 'redux-devtools-extension';
 
-export default createStore(rootReducer, composeWithDevTools(applyMiddleware(thunk, socketMiddleware())));
+const DEVELOPMENT_MODE = true;
+
+let store;
+if (DEVELOPMENT_MODE) {
+    store = createStore(rootReducer, composeWithDevTools(applyMiddleware(thunk, socketMiddleware())));
+} else {
+    store = createStore(rootReducer, applyMiddleware(thunk, socketMiddleware()));
+}
+
+export default store;
