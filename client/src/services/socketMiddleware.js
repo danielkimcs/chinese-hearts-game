@@ -48,12 +48,12 @@ const socketMiddleware = () => {
                 dispatch(setPlayerCards(cards));
             });
 
-            socket.on(Constants.EVENT_TYPE.ASK_CONFIRM_HAND, () => {
-                dispatch(setHandConfirmation(false));
+            socket.on(Constants.EVENT_TYPE.ASK_CONFIRM_HAND, (hasConfirmed) => {
+                dispatch(setHandConfirmation(hasConfirmed));
             });
 
-            socket.on(Constants.EVENT_TYPE.ASK_START_ROUND, () => {
-                dispatch(setStartRoundConfirmation(false));
+            socket.on(Constants.EVENT_TYPE.ASK_START_ROUND, (hasConfirmed) => {
+                dispatch(setStartRoundConfirmation(hasConfirmed));
             });
         }
         

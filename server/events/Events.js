@@ -52,12 +52,12 @@ class Events {
 
     askConfirmHand(player = null) {
         let roomDestination = player ? player.socket.id : this.room.roomName;
-        this.room.io.in(roomDestination).emit(Constants.EVENT_TYPE.ASK_CONFIRM_HAND);
+        this.room.io.in(roomDestination).emit(Constants.EVENT_TYPE.ASK_CONFIRM_HAND, player.hasConfirmedHand);
     }
 
     askStartRound(player = null) {
         let roomDestination = player ? player.socket.id : this.room.roomName;
-        this.room.io.in(roomDestination).emit(Constants.EVENT_TYPE.ASK_START_ROUND);
+        this.room.io.in(roomDestination).emit(Constants.EVENT_TYPE.ASK_START_ROUND, player.hasConfirmedStartRound);
     }
 }
 
