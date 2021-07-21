@@ -23,8 +23,8 @@ class Events {
         this.room.io.to(this.room.roomName).emit(Constants.EVENT_TYPE.UPDATE_PLAYER_LIST, filteredPlayers);
     }
 
-    updateCountdown(countdown) {
-        this.room.io.in(this.room.roomName).emit(Constants.EVENT_TYPE.GAME_STARTING_COUNTDOWN, countdown);
+    updateCountdown(countdown, eventType) {
+        this.room.io.in(this.room.roomName).emit(eventType, countdown);
     }
 
     updateRoomState(player = null) {

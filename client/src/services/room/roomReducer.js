@@ -7,6 +7,7 @@ const initialState = {
     players: [],
     roomState: Constants.ROOM_STATES.ROOM_PENDING,
     startingCountdown: null,
+    setupCountdown: null,
     pause: false,
     currentTrick: null
 };
@@ -32,6 +33,11 @@ function roomReducer(state = initialState, action) {
             return {
                 ...state,
                 startingCountdown: action.payload
+            }
+        case Constants.EVENT_TYPE.ROOM_SETUP_COUNTDOWN:
+            return {
+                ...state,
+                setupCountdown: action.payload
             }
         case Constants.EVENT_TYPE.GAME_PAUSE:
             return {

@@ -1,6 +1,7 @@
 import {
     setPlayers,
     setStartingCountdown,
+    setSetupCountdown,
     setGamePause,
     setRoomState,
     setCurrentTrick
@@ -21,6 +22,10 @@ const addListeners = (dispatch, socket) => {
 
     socket.on(Constants.EVENT_TYPE.GAME_STARTING_COUNTDOWN, counter => {
         dispatch(setStartingCountdown(counter));
+    });
+
+    socket.on(Constants.ROOM_STATES.ROOM_SETUP_COUNTDOWN, counter => {
+        dispatch(setSetupCountdown(counter));
     });
 
     socket.on(Constants.EVENT_TYPE.GAME_PAUSE, paused => {
