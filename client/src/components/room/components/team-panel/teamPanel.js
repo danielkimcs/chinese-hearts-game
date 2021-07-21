@@ -13,6 +13,8 @@ const teamPanelSettings = {
     noTeam: { darkColor: "bg-gray-200", lightColor: "bg-gray-100", text: "Not in a team" }
 }
 
+const noTeamHeight = ["h-12", "h-24", "h-36", "h-48", "h-56"];
+
 const teamSwitchDelay = 2000;
 
 export const TeamPanel = () => {
@@ -24,6 +26,10 @@ export const TeamPanel = () => {
     const setupCountdown = useSelector(getRoomSetupCountdown);
 
     const [clickable, setClickable] = useState(true);
+
+    const noTeamPlayers = players.filter(player =>
+        player.status !== Constants.PLAYER_STATUS.PLAYER_DISCONNECTED
+        && player.currentTeam.length === 0);
 
     const handleTeamClick = (team) => {
         if (clickable && ownPlayer.currentTeam !== team) {
@@ -37,12 +43,13 @@ export const TeamPanel = () => {
 
     return (
         <div className="container">
-            <div className="text-center w-full pt-3">
+            <div className="text-center w-full pt-3 flex flex-col">
                 <span className="text-lg font-bold">
                     {setupCountdown === null ?
                         (roomState === Constants.ROOM_STATES.ROOM_SETUP_COUNTDOWN ? 'Starting the game with these teams...' : 'Choose a team!')
                         : 'Starting in ' + setupCountdown + '...'}
                 </span>
+                <span class="text-md text-gray-500">Teams have to be balanced to start the game!</span>
             </div>
             <div className="grid grid-cols-2 mx-auto">
                 {[Constants.TEAM_TYPE.TEAM_A, Constants.TEAM_TYPE.TEAM_B].map((team) => {
@@ -52,16 +59,16 @@ export const TeamPanel = () => {
                     let disabled = !clickable || ownPlayer.currentTeam === team;
                     return (
                         <div key={team} className={`h-56 ${teamPanelSettings[team].lightColor} m-3 relative rounded-lg shadow-md flex flex-col 
-                        ${disabled ? 'opacity-60' : 'hover:cursor-pointer hover:opacity-80'}`}
+                        ${disabled ? 'opacity-60 hover:cursor-not-allowed' : 'hover:cursor-pointer hover:opacity-80'}`}
                             onClick={() => {
                                 handleTeamClick(team);
                             }}>
-                            {!clickable ? <div className="absolute w-full h-full grid">
+                            {!clickable && ownPlayer.currentTeam !== team ? <div className="absolute w-full h-full grid">
                                 <div className="m-auto">
                                     <Spinner />
                                 </div>
                             </div> : null}
-                            <div className={`w-full font-bold ${teamPanelSettings[team].darkColor} py-3 text-center flex flex-col justify-items-center rounded-t-lg`}>
+                            <div className={`w-full font-bold text-lg ${teamPanelSettings[team].darkColor} py-3 text-center flex flex-col justify-items-center rounded-t-lg`}>
                                 {teamPanelSettings[team].text} ({teamPlayers.length} / 2{teamPlayers.length > 2 ? ' - Too many!' : ''})
                             </div>
                             <div className="flex flex-col my-auto px-4">
@@ -75,18 +82,16 @@ export const TeamPanel = () => {
                     );
                 })}
 
-                <div className={`col-span-2 h-56 ${teamPanelSettings.noTeam.lightColor} m-3 rounded-lg shadow-md flex flex-col`}>
+                <div className={`col-span-2 ${noTeamHeight[noTeamPlayers.length]} ${teamPanelSettings.noTeam.lightColor} m-3 rounded-lg shadow-md flex flex-col`}>
                     <div className={`w-full font-bold ${teamPanelSettings.noTeam.darkColor} py-3 text-center flex flex-col justify-items-center rounded-t-lg`}>
                         {teamPanelSettings.noTeam.text}
                     </div>
                     <div className="flex flex-col my-auto px-4">
-                        {players.filter(player =>
-                            player.status !== Constants.PLAYER_STATUS.PLAYER_DISCONNECTED
-                            && player.currentTeam.length === 0).map(player =>
-                                <div key={player.username} className={`text-center m-2 truncate ${username === player.username ? 'font-bold' : ''}`}>
-                                    {player.username}
-                                </div>
-                            )}
+                        {noTeamPlayers.map(player =>
+                            <div key={player.username} className={`text-center m-2 truncate ${username === player.username ? 'font-bold' : ''}`}>
+                                {player.username}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
