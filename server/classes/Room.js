@@ -113,12 +113,12 @@ class Room {
             return;
         }
         let connectedPlayers = this.getConnectedPlayers();
-        Utility.shuffleArray(connectedPlayers);
-        this.determineTeams(connectedPlayers);
-        this.determinePlayerOrder(connectedPlayers);
+        // Utility.shuffleArray(connectedPlayers);
+        // this.determineTeams(connectedPlayers);
+        // this.determinePlayerOrder(connectedPlayers);
 
         this.Events.updatePlayerList();
-        this.startState(Constants.ROOM_STATES.ROUND_DEAL);
+        // this.startState(Constants.ROOM_STATES.ROUND_DEAL);
     }
 
     roundDeal() {

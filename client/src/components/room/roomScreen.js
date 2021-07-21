@@ -5,6 +5,7 @@ import PlayerList from './components/player-list';
 import Leaderboard from './components/leaderboard';
 import PauseScreen from './components/pause-screen';
 import FailureScreen from './components/failure-screen';
+import TeamPanel from './components/team-panel';
 import Button from '../../shared/components/button';
 
 import { displayStatusValues, displayMessageValues } from '../../shared/constants';
@@ -40,7 +41,7 @@ const RoomScreen = () => {
         <>
             {pause ? <PauseScreen /> : null}
             {displayStatus.status === displayStatusValues.JOIN_SUCCESS ?
-                <>
+                <>{roomState !== Constants.ROOM_STATES.ROOM_SETUP ? <>
                     <GameMessage roundHasFinished={currentCards.length === 0} />
                     {roomState !== Constants.ROOM_STATES.ROOM_PENDING && roomState !== Constants.ROOM_STATES.ROOM_COUNTDOWN ?
                         <div className="absolute top-0 right-0">
@@ -55,7 +56,10 @@ const RoomScreen = () => {
                     {confirmedStartRound === false ?
                         <Button onClick={handleConfirmStartRound} value="START NEW ROUND?" />
                         : null}
-
+                </> :
+                    <div class="w-2/3 mx-auto mt-8">
+                        <TeamPanel />
+                    </div>}
                 </>
                 : (displayStatus.status === displayStatusValues.JOIN_FAILURE ?
                     <FailureScreen message={displayMessageValues[displayStatus.message]} />
