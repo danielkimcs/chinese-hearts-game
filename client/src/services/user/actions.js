@@ -58,3 +58,11 @@ export const sendNewRoundConfirmation = () => (
         emit: true
     }
 );
+
+export const sendSelectedTeam = (selectedTeam) => (
+    {
+        type: Constants.LISTENER_TYPE.SELECT_TEAM,
+        payload: selectedTeam,
+        emit: true
+    }
+);

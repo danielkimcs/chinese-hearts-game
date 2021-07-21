@@ -1,6 +1,8 @@
 import React from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { getRoomPlayers } from "../../../../services/room/selectors";
+import { getUsername } from "../../../../services/user/selectors";
+import { sendSelectedTeam } from "../../../../services/user/actions";
 
 const Constants = require('../../../../../../shared/constants');
 
@@ -11,7 +13,9 @@ const teamPanelSettings = {
 }
 
 export const TeamPanel = () => {
+    const dispatch = useDispatch();
     const players = useSelector(getRoomPlayers);
+    const username = useSelector(getUsername);
     return (
         <div className="container">
             <div className="text-center w-full pt-3">
@@ -23,13 +27,14 @@ export const TeamPanel = () => {
                         player.status !== Constants.PLAYER_STATUS.PLAYER_DISCONNECTED
                         && player.currentTeam === team);
                     return (
-                        <div className={`h-36 ${teamPanelSettings[team].lightColor} m-3 rounded-lg shadow-md flex flex-col hover:cursor-pointer hover:opacity-80`}>
+                        <div key={team} className={`h-56 ${teamPanelSettings[team].lightColor} m-3 rounded-lg shadow-md flex flex-col hover:cursor-pointer hover:opacity-80`}
+                            onClick={() => dispatch(sendSelectedTeam(team))}>
                             <div className={`w-full font-bold ${teamPanelSettings[team].darkColor} py-3 text-center flex flex-col justify-items-center rounded-t-lg`}>
-                                {teamPanelSettings[team].text}
+                                {teamPanelSettings[team].text} ({teamPlayers.length} / 2{teamPlayers.length > 2 ? ' - Too many!' : ''})
                             </div>
                             <div className="flex flex-col my-auto px-4">
                                 {teamPlayers.map(player =>
-                                    <div className="text-center m-2 truncate">
+                                    <div key={player.username} className={`text-center m-2 truncate ${username === player.username ? 'font-bold' : ''}`}>
                                         {player.username}
                                     </div>)
                                 }
@@ -46,7 +51,7 @@ export const TeamPanel = () => {
                         {players.filter(player =>
                             player.status !== Constants.PLAYER_STATUS.PLAYER_DISCONNECTED
                             && player.currentTeam.length === 0).map(player =>
-                                <div className="text-center m-2 truncate">
+                                <div key={player.username} className={`text-center m-2 truncate ${username === player.username ? 'font-bold' : ''}`}>
                                     {player.username}
                                 </div>
                             )}
