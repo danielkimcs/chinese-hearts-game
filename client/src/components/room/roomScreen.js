@@ -6,6 +6,7 @@ import Leaderboard from './components/leaderboard';
 import PauseScreen from './components/pause-screen';
 import FailureScreen from './components/failure-screen';
 import TeamPanel from './components/team-panel';
+import RejoinPanel from './components/rejoin-panel';
 import Button from '../../shared/components/button';
 
 import { displayStatusValues, displayMessageValues } from '../../shared/constants';
@@ -62,7 +63,9 @@ const RoomScreen = () => {
                 </div>}
                 </>
                 : (displayStatus.status === displayStatusValues.JOIN_FAILURE ?
-                    <FailureScreen message={displayMessageValues[displayStatus.message]} />
+                    (displayStatus.message !== Constants.ROOM_JOIN_FAILURE_MSG_TYPE.REJOIN_PENDING ?
+                        <FailureScreen message={displayMessageValues[displayStatus.message]} />
+                        : <RejoinPanel />)
                     : <div className="w-full flex h-screen m-auto">
                         <Spinner />
                     </div>)}

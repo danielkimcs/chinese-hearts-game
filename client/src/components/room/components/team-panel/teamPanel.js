@@ -49,7 +49,7 @@ export const TeamPanel = () => {
                         (roomState === Constants.ROOM_STATES.ROOM_SETUP_COUNTDOWN ? 'Starting the game with these teams...' : 'Choose a team!')
                         : 'Starting in ' + setupCountdown + '...'}
                 </span>
-                <span class="text-md text-gray-500">Teams have to be balanced to start the game!</span>
+                <span className="text-md text-gray-500">Teams have to be balanced to start the game!</span>
             </div>
             <div className="grid grid-cols-2 mx-auto">
                 {[Constants.TEAM_TYPE.TEAM_A, Constants.TEAM_TYPE.TEAM_B].map((team) => {

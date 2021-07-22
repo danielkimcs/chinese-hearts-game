@@ -5,7 +5,7 @@ class Events {
         this.room = parent;
     }
 
-    updatePlayerList() {
+    updatePlayerList(player = null) {
         let filteredPlayers = Object.values(this.room.players).map(player => {
             return {
                 username: player.username,
@@ -20,7 +20,8 @@ class Events {
                 points: player.points,
             }
         });
-        this.room.io.to(this.room.roomName).emit(Constants.EVENT_TYPE.UPDATE_PLAYER_LIST, filteredPlayers);
+        let roomDestination = player ? player.socket.id : this.room.roomName;
+        this.room.io.to(roomDestination).emit(Constants.EVENT_TYPE.UPDATE_PLAYER_LIST, filteredPlayers);
     }
 
     updateCountdown(countdown, eventType) {

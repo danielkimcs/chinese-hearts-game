@@ -29,25 +29,34 @@ module.exports = function (rooms, socket, socketInfo, io) {
             console.log(`Socket ${socket.id} joining ${roomName}`);
             socket.join(socketInfo.currentPlayerRoomName);
 
-            // Room is not full, and there is no connected player with same username
-            if (currentPlayerRoom.currentState === Constants.ROOM_STATES.ROOM_PENDING) {
+            // At this point, the room is not full, and there is no connected player with same username
+            if (currentPlayerRoom.currentState === Constants.ROOM_STATES.ROOM_PENDING
+                || currentPlayerRoom.currentState === Constants.ROOM_STATES.ROOM_SETUP) {
                 currentPlayerRoom.addPlayer(socket, socketInfo.currentPlayerUsername);
             }
             else {
                 // Replace disconnected player
-                let playerToReplace = (socketInfo.currentPlayerUsername in currentPlayerRoom.players) ?
-                    currentPlayerRoom.players[socketInfo.currentPlayerUsername]
-                    : currentPlayerRoom.fetchDisconnectedPlayer();
-                if (!playerToReplace) {
-                    callback({
-                        status: false,
-                        message: Constants.ROOM_JOIN_FAILURE_MSG_TYPE.GENERAL_ERROR
-                    });
-                    return;
-                }
-                currentPlayerRoom.replacePlayer(playerToReplace, socket, socketInfo.currentPlayerUsername);
-                // Now update player screen
-                currentPlayerRoom.updateClient(socketInfo.currentPlayerUsername);
+                currentPlayerRoom.Events.updatePlayerList();
+                callback({
+                    status: false,
+                    message: Constants.ROOM_JOIN_FAILURE_MSG_TYPE.REJOIN_PENDING
+                });
+
+                return;
+
+                // let playerToReplace = (socketInfo.currentPlayerUsername in currentPlayerRoom.players) ?
+                //     currentPlayerRoom.players[socketInfo.currentPlayerUsername]
+                //     : currentPlayerRoom.fetchDisconnectedPlayer();
+                // if (!playerToReplace) {
+                //     callback({
+                //         status: false,
+                //         message: Constants.ROOM_JOIN_FAILURE_MSG_TYPE.GENERAL_ERROR
+                //     });
+                //     return;
+                // }
+                // currentPlayerRoom.replacePlayer(playerToReplace, socket, socketInfo.currentPlayerUsername);
+                // // Now update player screen
+                // currentPlayerRoom.updateClient(socketInfo.currentPlayerUsername);
             }
         }
         else {
@@ -60,16 +69,7 @@ module.exports = function (rooms, socket, socketInfo, io) {
         }
 
         // Room is now full so start countdown or resume game
-        if (currentPlayerRoom.isRoomFull()) {
-            if (currentPlayerRoom.currentState === Constants.ROOM_STATES.ROOM_PENDING) {
-                currentPlayerRoom.startState(Constants.ROOM_STATES.ROOM_COUNTDOWN);
-            }
-            else if (currentPlayerRoom.currentState !== Constants.ROOM_STATES.ROOM_COUNTDOWN
-                && currentPlayerRoom.gamePaused) {
-                currentPlayerRoom.startState(currentPlayerRoom.currentState);
-                currentPlayerRoom.togglePause(false);
-            }
-        }
+        currentPlayerRoom.resumeGameIfPossible();
 
         socketInfo.currentPlayerJoined = true;
         callback({

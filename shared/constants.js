@@ -25,6 +25,7 @@ module.exports = Object.freeze({
         ROOM_FULL: 'ROOM_FULL',
         GENERAL_ERROR: 'GENERAL_ERROR',
         ROOM_IN_PROGRESS: 'ROOM_IN_PROGRESS',
+        REJOIN_PENDING: 'REJOIN_PENDING',
     },
     TEAM_TYPE: {
         TEAM_A: 'TEAM_A',

@@ -324,6 +324,19 @@ class Room {
         return connectedPlayers;
     }
 
+    resumeGameIfPossible() {
+        if (this.isRoomFull()) {
+            if (this.currentState === Constants.ROOM_STATES.ROOM_PENDING) {
+                this.startState(Constants.ROOM_STATES.ROOM_COUNTDOWN);
+            }
+            else if (this.currentState !== Constants.ROOM_STATES.ROOM_COUNTDOWN
+                && this.gamePaused) {
+                this.startState(this.currentState);
+                this.togglePause(false);
+            }
+        }
+    }
+
     determinePlayerOrder() {
         if (Constants.REQUIRED_NUM_PLAYERS === 4) {
             // Player order: 0 (Team A) -> 1 (Team B) -> 2 (Team A) -> 3 (Team B)
