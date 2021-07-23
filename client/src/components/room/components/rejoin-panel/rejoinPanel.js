@@ -1,6 +1,7 @@
 import React from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { getRoomPlayers } from "../../../../services/room/selectors";
+import { sendReplacingPlayerUsername } from "../../../../services/user/actions";
 
 const Constants = require('../../../../../../shared/constants');
 
@@ -9,7 +10,10 @@ const rejoinPanelSettings = {
     [Constants.TEAM_TYPE.TEAM_B]: { darkColor: "bg-blue-300", lightColor: "bg-blue-200", text: "Team B" },
 }
 
+const panelHeights = ['h-12', 'h-28', 'h-44'];
+
 export const RejoinPanel = () => {
+    const dispatch = useDispatch();
     const players = useSelector(getRoomPlayers);
     const disconnectedPlayers = players.filter(player =>
         player.status === Constants.PLAYER_STATUS.PLAYER_DISCONNECTED);
@@ -25,13 +29,14 @@ export const RejoinPanel = () => {
                         const disconnectedTeamPlayers = disconnectedPlayers.filter(player =>
                             player.currentTeam === team);
                         return (
-                            <div className={`${disconnectedTeamPlayers.length === 2 ? 'h-44' : 'h-28'} ${rejoinPanelSettings[team].lightColor} m-3 rounded-lg z-10 shadow-md flex flex-col`}>
+                            <div className={`${panelHeights[disconnectedTeamPlayers.length]} ${rejoinPanelSettings[team].lightColor} m-3 rounded-lg z-10 shadow-md flex flex-col`}>
                                 <div className={`w-full font-bold ${rejoinPanelSettings[team].darkColor} py-3 text-center flex flex-col justify-items-center rounded-t-lg`}>
                                     {rejoinPanelSettings[team].text}
                                 </div>
                                 <div className="flex flex-col my-auto px-4">
                                     {disconnectedTeamPlayers.map(player =>
-                                        <div className={`text-center m-2 truncate ${rejoinPanelSettings[team].darkColor} rounded-md p-2 shadow-md hover:cursor-pointer hover:opacity-70 text-gray-500 italic`}>
+                                        <div className={`text-center m-2 truncate ${rejoinPanelSettings[team].darkColor} rounded-md p-2 shadow-md hover:cursor-pointer hover:opacity-70 text-gray-500 italic`}
+                                        onClick={() => dispatch(sendReplacingPlayerUsername(player.username))}>
                                             {player.username}
                                         </div>
                                     )}

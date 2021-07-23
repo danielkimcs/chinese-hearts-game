@@ -60,6 +60,10 @@ class Events {
         let roomDestination = player ? player.socket.id : this.room.roomName;
         this.room.io.in(roomDestination).emit(Constants.EVENT_TYPE.ASK_START_ROUND, player.hasConfirmedStartRound);
     }
+
+    updateDisplayStatus(response, player) {
+        this.room.io.in(player.socket.id).emit(Constants.EVENT_TYPE.UPDATE_DISPLAY_STATUS, response);
+    }
 }
 
 module.exports = Events;

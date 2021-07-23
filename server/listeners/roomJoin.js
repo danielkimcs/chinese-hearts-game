@@ -35,7 +35,7 @@ module.exports = function (rooms, socket, socketInfo, io) {
                 currentPlayerRoom.addPlayer(socket, socketInfo.currentPlayerUsername);
             }
             else {
-                // Replace disconnected player
+                // Bring player to rejoin panel
                 currentPlayerRoom.Events.updatePlayerList();
                 callback({
                     status: false,
@@ -43,20 +43,6 @@ module.exports = function (rooms, socket, socketInfo, io) {
                 });
 
                 return;
-
-                // let playerToReplace = (socketInfo.currentPlayerUsername in currentPlayerRoom.players) ?
-                //     currentPlayerRoom.players[socketInfo.currentPlayerUsername]
-                //     : currentPlayerRoom.fetchDisconnectedPlayer();
-                // if (!playerToReplace) {
-                //     callback({
-                //         status: false,
-                //         message: Constants.ROOM_JOIN_FAILURE_MSG_TYPE.GENERAL_ERROR
-                //     });
-                //     return;
-                // }
-                // currentPlayerRoom.replacePlayer(playerToReplace, socket, socketInfo.currentPlayerUsername);
-                // // Now update player screen
-                // currentPlayerRoom.updateClient(socketInfo.currentPlayerUsername);
             }
         }
         else {

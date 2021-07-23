@@ -4,7 +4,8 @@ import {
     setSetupCountdown,
     setGamePause,
     setRoomState,
-    setCurrentTrick
+    setCurrentTrick,
+    setDisplayStatus
 } from './room/actions';
 import {
     setPlayerCards,
@@ -50,6 +51,10 @@ const addListeners = (dispatch, socket) => {
 
     socket.on(Constants.EVENT_TYPE.ASK_START_ROUND, (hasConfirmed) => {
         dispatch(setStartRoundConfirmation(hasConfirmed));
+    });
+
+    socket.on(Constants.EVENT_TYPE.UPDATE_DISPLAY_STATUS, (response) => {
+        dispatch(setDisplayStatus(response));
     });
 }
 

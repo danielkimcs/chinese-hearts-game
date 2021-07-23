@@ -66,3 +66,11 @@ export const sendSelectedTeam = (selectedTeam) => (
         emit: true
     }
 );
+
+export const sendReplacingPlayerUsername = (playerUsername) => (
+    {
+        type: Constants.LISTENER_TYPE.REPLACE_PLAYER,
+        payload: playerUsername,
+        emit: true
+    }
+)
