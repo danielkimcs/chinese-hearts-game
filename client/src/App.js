@@ -3,6 +3,9 @@ import './App.css';
 import { BrowserRouter as Router } from "react-router-dom";
 import Routes from "./routes";
 
+import ReactGA from 'react-ga';
+ReactGA.initialize('UA-88938949-4');
+
 function App() {
   return (
     <Router>

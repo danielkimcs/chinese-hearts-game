@@ -21,6 +21,10 @@ module.exports = function (rooms, socket, socketInfo) {
             if (room.currentState === Constants.ROOM_STATES.ROOM_COUNTDOWN) {
                 room.startState(Constants.ROOM_STATES.ROOM_PENDING);
             }
+            else if (room.currentState === Constants.ROOM_STATES.ROOM_SETUP_COUNTDOWN) {
+                room.startState(Constants.ROOM_STATES.ROOM_SETUP);
+                room.startState(Constants.ROOM_STATES.ROOM_PAUSE);
+            }
             else if (!room.gamePaused) {
                 room.startState(Constants.ROOM_STATES.ROOM_PAUSE);
             }

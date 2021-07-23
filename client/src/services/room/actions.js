@@ -50,6 +50,13 @@ export const setStartingCountdown = (startingCountdown) => (
     }
 );
 
+export const setSetupCountdown = (startingCountdown) => (
+    {
+        type: Constants.EVENT_TYPE.ROOM_SETUP_COUNTDOWN,
+        payload: startingCountdown
+    }
+);
+
 export const setGamePause = (pause) => (
     {
         type: Constants.EVENT_TYPE.GAME_PAUSE,

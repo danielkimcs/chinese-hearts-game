@@ -6,6 +6,8 @@ export const getRoomState = store => store.room.roomState;
 
 export const getRoomCountdown = store => store.room.startingCountdown;
 
+export const getRoomSetupCountdown = store => store.room.setupCountdown;
+
 export const getRoomPaused = store => store.room.pause;
 
 export const getRoomCurrentTrick = store => store.room.currentTrick;

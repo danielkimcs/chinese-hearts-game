@@ -5,7 +5,7 @@ class Events {
         this.room = parent;
     }
 
-    updatePlayerList() {
+    updatePlayerList(player = null) {
         let filteredPlayers = Object.values(this.room.players).map(player => {
             return {
                 username: player.username,
@@ -20,11 +20,12 @@ class Events {
                 points: player.points,
             }
         });
-        this.room.io.to(this.room.roomName).emit(Constants.EVENT_TYPE.UPDATE_PLAYER_LIST, filteredPlayers);
+        let roomDestination = player ? player.socket.id : this.room.roomName;
+        this.room.io.to(roomDestination).emit(Constants.EVENT_TYPE.UPDATE_PLAYER_LIST, filteredPlayers);
     }
 
-    updateCountdown(countdown) {
-        this.room.io.in(this.room.roomName).emit(Constants.EVENT_TYPE.GAME_STARTING_COUNTDOWN, countdown);
+    updateCountdown(countdown, eventType) {
+        this.room.io.in(this.room.roomName).emit(eventType, countdown);
     }
 
     updateRoomState(player = null) {
@@ -58,6 +59,10 @@ class Events {
     askStartRound(player = null) {
         let roomDestination = player ? player.socket.id : this.room.roomName;
         this.room.io.in(roomDestination).emit(Constants.EVENT_TYPE.ASK_START_ROUND, player.hasConfirmedStartRound);
+    }
+
+    updateDisplayStatus(response, player) {
+        this.room.io.in(player.socket.id).emit(Constants.EVENT_TYPE.UPDATE_DISPLAY_STATUS, response);
     }
 }
 

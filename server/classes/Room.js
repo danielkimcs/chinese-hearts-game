@@ -55,6 +55,7 @@ class Room {
             [Constants.ROOM_STATES.ROOM_PENDING]: this.roomPending,
             [Constants.ROOM_STATES.ROOM_COUNTDOWN]: this.roomCountdown,
             [Constants.ROOM_STATES.ROOM_SETUP]: this.roomSetup,
+            [Constants.ROOM_STATES.ROOM_SETUP_COUNTDOWN]: this.roomSetupCountdown,
             [Constants.ROOM_STATES.ROUND_DEAL]: this.roundDeal,
             [Constants.ROOM_STATES.ROUND_CONFIRM]: this.roundConfirm,
             [Constants.ROOM_STATES.ROUND_START]: this.roundStart,
@@ -63,7 +64,7 @@ class Room {
             [Constants.ROOM_STATES.TRICK_END]: this.trickEnd,
             [Constants.ROOM_STATES.ROUND_END]: this.roundEnd
         };
-        
+
         this.bindStateActions();
     }
 
@@ -97,28 +98,26 @@ class Room {
         if (this.countdownInterval) {
             clearInterval(this.countdownInterval);
             this.countdownInterval = undefined;
-            this.Events.updateCountdown(null);
+            this.Events.updateCountdown(null, Constants.EVENT_TYPE.GAME_STARTING_COUNTDOWN);
         }
     }
 
     roomCountdown() {
-        // console.log(this);
         this.removeDisconnectedPlayers();
-        this.countdownInterval = this.beginStartingCountdown();
+        this.countdownInterval = this.beginCountdown(5, Constants.EVENT_TYPE.GAME_STARTING_COUNTDOWN, Constants.ROOM_STATES.ROOM_SETUP);
     }
 
     roomSetup() {
-        if (!this.isRoomFull()) {
-            this.startState(Constants.ROOM_STATES.ROOM_PENDING);
-            return;
+        if (this.countdownInterval) {
+            clearInterval(this.countdownInterval);
+            this.countdownInterval = undefined;
+            this.Events.updateCountdown(null, Constants.EVENT_TYPE.ROOM_SETUP_COUNTDOWN);
         }
-        let connectedPlayers = this.getConnectedPlayers();
-        Utility.shuffleArray(connectedPlayers);
-        this.determineTeams(connectedPlayers);
-        this.determinePlayerOrder(connectedPlayers);
-
         this.Events.updatePlayerList();
-        this.startState(Constants.ROOM_STATES.ROUND_DEAL);
+    }
+
+    roomSetupCountdown() {
+        this.countdownInterval = this.beginCountdown(5, Constants.EVENT_TYPE.ROOM_SETUP_COUNTDOWN, Constants.ROOM_STATES.ROUND_DEAL, true);
     }
 
     roundDeal() {
@@ -226,24 +225,6 @@ class Room {
         });
     }
 
-    // HELPER FUNCTIONS
-
-    addPlayer(socket, username) {
-        this.players[username] = new Player(socket, username);
-        console.log(username, this.players[username].playerId);
-        this.Events.updatePlayerList();
-    }
-
-    replacePlayer(playerToReplace, newSocket, newUsername) {
-        if (!(newUsername || newSocket)) return;
-        delete this.players[playerToReplace.username];
-        playerToReplace.username = newUsername;
-        playerToReplace.socket = newSocket;
-        playerToReplace.status = Constants.PLAYER_STATUS.PLAYER_CONNECTED;
-        this.players[newUsername] = playerToReplace;
-        this.Events.updatePlayerList();
-    }
-
     updateClient(username) {
         let player = this.players[username];
 
@@ -251,7 +232,8 @@ class Room {
 
         if (this.gamePaused
             && this.currentState !== Constants.ROOM_STATES.ROOM_PENDING
-            && this.currentState !== Constants.ROOM_STATES.ROOM_COUNTDOWN) {
+            && this.currentState !== Constants.ROOM_STATES.ROOM_COUNTDOWN
+            && this.currentState !== Constants.ROOM_STATES.ROOM_SETUP_COUNTDOWN) {
             this.Events.pauseGame(true, player);
         }
 
@@ -270,10 +252,32 @@ class Room {
 
     }
 
+    // HELPER FUNCTIONS
+
+    addPlayer(socket, username) {
+        this.players[username] = new Player(socket, username);
+        console.log(username, this.players[username].playerId);
+        this.Events.updatePlayerList();
+    }
+
+    replacePlayer(playerToReplace, newSocket, newUsername) {
+        if (!(newUsername || newSocket)) return;
+        delete this.players[playerToReplace.username];
+        playerToReplace.username = newUsername;
+        playerToReplace.socket = newSocket;
+        playerToReplace.status = Constants.PLAYER_STATUS.PLAYER_CONNECTED;
+        this.players[newUsername] = playerToReplace;
+        this.Events.updatePlayerList();
+    }
+
     disconnectPlayer(username) {
         if (!(username in this.players)) return;
-        this.players[username].status = Constants.PLAYER_STATUS.PLAYER_DISCONNECTED;
-        this.players[username].socket = null;
+        let disconnectedPlayer = this.players[username];
+        disconnectedPlayer.status = Constants.PLAYER_STATUS.PLAYER_DISCONNECTED;
+        disconnectedPlayer.socket = null;
+        if (this.currentState === Constants.ROOM_STATES.ROOM_SETUP || this.currentState === Constants.ROOM_STATES.ROOM_SETUP_COUNTDOWN) {
+            disconnectedPlayer.currentTeam = "";
+        }
         this.Events.updatePlayerList();
     }
 
@@ -320,40 +324,53 @@ class Room {
         return connectedPlayers;
     }
 
-    determineTeams(shuffledPlayerList) {
-        if (Constants.REQUIRED_NUM_PLAYERS === 4) {
-            // Player teams: Team A - 0, 2 ; Team B - 1, 3
-            this.teams[Constants.TEAM_TYPE.TEAM_A].members = [shuffledPlayerList[0], shuffledPlayerList[2]];
-            shuffledPlayerList[0].currentTeam = shuffledPlayerList[2].currentTeam = Constants.TEAM_TYPE.TEAM_A;
-
-            this.teams[Constants.TEAM_TYPE.TEAM_B].members = [shuffledPlayerList[1], shuffledPlayerList[3]];
-            shuffledPlayerList[1].currentTeam = shuffledPlayerList[3].currentTeam = Constants.TEAM_TYPE.TEAM_B;
+    resumeGameIfPossible() {
+        if (this.isRoomFull()) {
+            if (this.currentState === Constants.ROOM_STATES.ROOM_PENDING) {
+                this.startState(Constants.ROOM_STATES.ROOM_COUNTDOWN);
+            }
+            else if (this.currentState !== Constants.ROOM_STATES.ROOM_COUNTDOWN
+                && this.gamePaused) {
+                this.startState(this.currentState);
+                this.togglePause(false);
+            }
         }
     }
 
-    determinePlayerOrder(shuffledPlayerList) {
+    determinePlayerOrder() {
         if (Constants.REQUIRED_NUM_PLAYERS === 4) {
             // Player order: 0 (Team A) -> 1 (Team B) -> 2 (Team A) -> 3 (Team B)
+            let teamAPlayerIndexes = [0, 1];
+            let teamBPlayerIndexes = [0, 1];
+            Utility.shuffleArray(teamAPlayerIndexes);
+            Utility.shuffleArray(teamBPlayerIndexes);
+            const shuffledPlayerList = [
+                this.teams[Constants.TEAM_TYPE.TEAM_A].members[teamAPlayerIndexes[0]],
+                this.teams[Constants.TEAM_TYPE.TEAM_B].members[teamBPlayerIndexes[0]],
+                this.teams[Constants.TEAM_TYPE.TEAM_A].members[teamAPlayerIndexes[1]],
+                this.teams[Constants.TEAM_TYPE.TEAM_B].members[teamBPlayerIndexes[1]]
+            ];
             for (let playerIndex = 0; playerIndex < 4; playerIndex++) {
                 shuffledPlayerList[playerIndex].nextPlayer = shuffledPlayerList[(playerIndex + 1) % 4];
             }
         }
     }
 
-    beginStartingCountdown() {
-        let countdown = 5;
-        let startingCountdown = setInterval(function () {
+    beginCountdown(timeLengthInSeconds, eventType, nextState, changePlayerOrder = false) {
+        let countdown = timeLengthInSeconds;
+        let countdownInterval = setInterval(function () {
             if (countdown === 0) {
-                this.Events.updateCountdown(null);
+                this.Events.updateCountdown(null, eventType);
                 this.countdownInterval = undefined;
-                clearInterval(startingCountdown);
-                this.startState(Constants.ROOM_STATES.ROOM_SETUP);
+                clearInterval(countdownInterval);
+                if (changePlayerOrder) this.determinePlayerOrder.bind(this).call();
+                this.startState(nextState);
             }
-            this.Events.updateCountdown(countdown);
+            this.Events.updateCountdown(countdown, eventType);
             countdown--;
         }.bind(this), COUNTDOWN_INTERVAL_TIME);
 
-        return startingCountdown;
+        return countdownInterval;
     }
 
     isUsernameTaken(username) {
