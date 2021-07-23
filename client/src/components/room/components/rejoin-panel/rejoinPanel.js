@@ -29,13 +29,13 @@ export const RejoinPanel = () => {
                         const disconnectedTeamPlayers = disconnectedPlayers.filter(player =>
                             player.currentTeam === team);
                         return (
-                            <div className={`${panelHeights[disconnectedTeamPlayers.length]} ${rejoinPanelSettings[team].lightColor} m-3 rounded-lg z-10 shadow-md flex flex-col`}>
+                            <div key={team} className={`${panelHeights[disconnectedTeamPlayers.length]} ${rejoinPanelSettings[team].lightColor} m-3 rounded-lg z-10 shadow-md flex flex-col`}>
                                 <div className={`w-full font-bold ${rejoinPanelSettings[team].darkColor} py-3 text-center flex flex-col justify-items-center rounded-t-lg`}>
                                     {rejoinPanelSettings[team].text}
                                 </div>
                                 <div className="flex flex-col my-auto px-4">
                                     {disconnectedTeamPlayers.map(player =>
-                                        <div className={`text-center m-2 truncate ${rejoinPanelSettings[team].darkColor} rounded-md p-2 shadow-md hover:cursor-pointer hover:opacity-70 text-gray-500 italic`}
+                                        <div key={player.username} className={`text-center m-2 truncate ${rejoinPanelSettings[team].darkColor} rounded-md p-2 shadow-md hover:cursor-pointer hover:opacity-70 text-gray-500 italic`}
                                         onClick={() => dispatch(sendReplacingPlayerUsername(player.username))}>
                                             {player.username}
                                         </div>

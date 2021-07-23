@@ -35,19 +35,19 @@ export const PlayerHand = ({ currentCards, playCard, currentTrick }) => {
                     if (!card.faceDown && hasNotConfirmedHand) {
                         let isSpecial = Utility.isSpecialCard(card);
                         return (
-                            <PlayableCard card={card} enabled={isSpecial} onClick={() => setFaceDown(card)} />
+                            <PlayableCard key={`${card.suit}${card.rank}`} card={card} enabled={isSpecial} onClick={() => setFaceDown(card)} />
                         );
                     } else if (!card.faceDown
                         && currentTrick
                         && currentTrick.currentTurnPlayerId === myPlayerId) {
                         let isLegal = isLegalMove(currentTrick, currentCards, card);
                         return (
-                            <PlayableCard card={card} enabled={isLegal} onClick={() => playCard(card)} />
+                            <PlayableCard key={`${card.suit}${card.rank}`} card={card} enabled={isLegal} onClick={() => playCard(card)} />
                         );
                     } else {
                         if (card.faceDown) return null;
                         return (
-                            <PlayableCard card={card} enabled={false} />
+                            <PlayableCard key={`${card.suit}${card.rank}`} card={card} enabled={false} />
                         );
                     }
                 })}
