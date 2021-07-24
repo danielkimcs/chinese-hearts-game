@@ -10,7 +10,8 @@ import {
 import {
     setPlayerCards,
     setHandConfirmation,
-    setStartRoundConfirmation
+    setStartRoundConfirmation,
+    setNotification
 } from './user/actions';
 
 const Constants = require('../../../shared/constants');
@@ -55,6 +56,10 @@ const addListeners = (dispatch, socket) => {
 
     socket.on(Constants.EVENT_TYPE.UPDATE_DISPLAY_STATUS, (response) => {
         dispatch(setDisplayStatus(response));
+    });
+
+    socket.on(Constants.EVENT_TYPE.NOTIFICATION, (message) => {
+        dispatch(setNotification(message));
     });
 }
 

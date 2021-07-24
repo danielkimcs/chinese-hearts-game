@@ -9,3 +9,5 @@ export const getCurrentCards = store => store.user.currentCards;
 export const getConfirmedHandStatus = store => store.user.hasConfirmedHand;
 
 export const getStartRoundStatus = store => store.user.confirmedStartRound;
+
+export const getNotificationMsg = store => store.user.latestNotificationMsg;
