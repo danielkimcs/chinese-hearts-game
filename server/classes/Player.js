@@ -15,6 +15,9 @@ class Player {
 
         this.hasConfirmedHand = false;
         this.hasConfirmedStartRound = false;
+        this.votes = {
+            randomizedTeams: false,
+        };
         
         this.currentHand = [];
         this.numFaceDown = 0;

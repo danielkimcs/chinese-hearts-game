@@ -15,6 +15,13 @@ export const setPlayerCards = (currentCards) => (
     }
 );
 
+export const setNotification = (message) => (
+    {
+        type: Constants.EVENT_TYPE.NOTIFICATION,
+        payload: message
+    }
+);
+
 export const setHandConfirmation = (hasConfirmedHand) => (
     {
         type: Constants.EVENT_TYPE.ASK_CONFIRM_HAND,
@@ -73,4 +80,11 @@ export const sendReplacingPlayerUsername = (playerUsername) => (
         payload: playerUsername,
         emit: true
     }
-)
+);
+
+export const sendVoteRandomTeams = () => (
+    {
+        type: Constants.LISTENER_TYPE.VOTE_RANDOMIZED_TEAMS,
+        emit: true
+    }
+);

@@ -36,6 +36,7 @@ class Room {
                 members: []
             }
         };
+        this.randomizedTeams = false;
         this.currentState = Constants.ROOM_STATES.ROOM_PENDING;
         this.countdownInterval = undefined;
         this.gamePaused = false;
@@ -113,7 +114,23 @@ class Room {
             this.countdownInterval = undefined;
             this.Events.updateCountdown(null, Constants.EVENT_TYPE.ROOM_SETUP_COUNTDOWN);
         }
-        this.Events.updatePlayerList();
+        if (this.randomizedTeams) {
+            // Randomize teams and determine player order
+            let connectedPlayers = this.getConnectedPlayers();
+            connectedPlayers.forEach(player => {
+                player.votes.randomizedTeams = false;
+            });
+            Utility.shuffleArray(connectedPlayers);
+            this.determineTeams(connectedPlayers);
+            this.determinePlayerOrder(connectedPlayers);
+
+            this.Events.updatePlayerList();
+            this.randomizedTeams = false;
+            this.Events.sendNotification("Teams have been randomized!");
+            this.startState(Constants.ROOM_STATES.ROUND_DEAL);
+        } else {
+            this.Events.updatePlayerList();
+        }
     }
 
     roomSetupCountdown() {
@@ -334,6 +351,17 @@ class Room {
                 this.startState(this.currentState);
                 this.togglePause(false);
             }
+        }
+    }
+
+    determineTeams(shuffledPlayerList) {
+        if (Constants.REQUIRED_NUM_PLAYERS === 4) {
+            // Player teams: Team A - 0, 2 ; Team B - 1, 3
+            this.teams[Constants.TEAM_TYPE.TEAM_A].members = [shuffledPlayerList[0], shuffledPlayerList[2]];
+            shuffledPlayerList[0].currentTeam = shuffledPlayerList[2].currentTeam = Constants.TEAM_TYPE.TEAM_A;
+
+            this.teams[Constants.TEAM_TYPE.TEAM_B].members = [shuffledPlayerList[1], shuffledPlayerList[3]];
+            shuffledPlayerList[1].currentTeam = shuffledPlayerList[3].currentTeam = Constants.TEAM_TYPE.TEAM_B;
         }
     }
 
