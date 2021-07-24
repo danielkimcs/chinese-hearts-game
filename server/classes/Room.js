@@ -117,9 +117,6 @@ class Room {
         if (this.randomizedTeams) {
             // Randomize teams and determine player order
             let connectedPlayers = this.getConnectedPlayers();
-            connectedPlayers.forEach(player => {
-                player.votes.randomizedTeams = false;
-            });
             Utility.shuffleArray(connectedPlayers);
             this.determineTeams(connectedPlayers);
             this.determinePlayerOrder(connectedPlayers);
@@ -140,6 +137,10 @@ class Room {
     roundDeal() {
         let roundPlayers = this.getConnectedPlayers();
 
+        roundPlayers.forEach(player => {
+            player.votes.randomizedTeams = false;
+        });
+
         // Clear collected cards from last round
         roundPlayers.forEach(player => {
             player.collectedCards = [];
@@ -151,6 +152,9 @@ class Room {
             player.currentHand = shuffledDeck.slice(index * shuffledDeck.length / 4, (index + 1) * shuffledDeck.length / 4);
             this.Events.updatePlayerCards(player);
         });
+
+        this.Events.sendNotification("Cards have been randomly dealt!");
+
         this.startState(Constants.ROOM_STATES.ROUND_CONFIRM);
     }
 
@@ -165,9 +169,12 @@ class Room {
 
     roundStart() {
         if (this.queenSpadeRecipient) {
+            this.Events.sendNotification(`${this.queenSpadeRecipient.username} collected the Queen of Spades last round, so ${this.queenSpadeRecipient.username} will start this round!`);
             this.currentTrick = new Trick(this.queenSpadeRecipient.playerId);
         } else if (!this.currentTrick) {
-            let randomFirstPlayerId = Utility.chooseRandom(this.getConnectedPlayers()).playerId;
+            const randomFirstPlayer = Utility.chooseRandom(this.getConnectedPlayers());
+            const randomFirstPlayerId = randomFirstPlayer.playerId;
+            this.Events.sendNotification(`${randomFirstPlayer.username} has been randomly chosen to start the first trick!`);
             this.currentTrick = new Trick(randomFirstPlayerId);
         }
         this.startState(Constants.ROOM_STATES.TRICK_PLAY);

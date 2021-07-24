@@ -17,7 +17,7 @@ export const Notification = ({ message }) => {
 
     return (
         <>{message.length ?
-            <div className="fixed bottom-5 bg-blue-100 border-t border-b border-blue-500 text-blue-700" role="alert">
+            <div className="fixed bottom-5 bg-blue-100 border-t border-b border-blue-500 text-blue-700 max-w-sm break-words" role="alert">
                 <div className="relative w-full h-full px-4 py-3 pr-7">
                     <div onClick={() => dispatch(setNotification(""))} className="hover:opacity-60 hover:cursor-pointer bg-blue-600 w-5 h-5 absolute top-0 right-0 flex flex-col justify-center text-white">
                         <span className="my-auto mx-auto">X</span>

@@ -29,5 +29,7 @@ module.exports = function (rooms, socket, socketInfo) {
                 room.startState(Constants.ROOM_STATES.ROOM_PAUSE);
             }
         }
+
+        room.Events.sendNotification(`${currentPlayerUsername} has disconnected!`);
     });
 }
