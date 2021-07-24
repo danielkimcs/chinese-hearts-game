@@ -9,7 +9,6 @@ module.exports = function (rooms, socket, socketInfo) {
         if (!room.gamePaused) return;
         let playerToReplace = room.players[replacingPlayerUsername];
         room.replacePlayer(playerToReplace, socket, currentPlayerUsername);
-        
         room.updateClient(currentPlayerUsername); // Now update player screen
 
         socketInfo.currentPlayerJoined = true;
@@ -18,6 +17,8 @@ module.exports = function (rooms, socket, socketInfo) {
             status: true,
             message: ""
         }, playerToReplace);
+
+        room.Events.sendNotification(`${currentPlayerUsername} has replaced ${replacingPlayerUsername}!`);
 
         room.resumeGameIfPossible();
     });

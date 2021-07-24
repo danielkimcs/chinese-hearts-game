@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import Spinner from "../../../../shared/components/spinner";
+import Button from "../../../../shared/components/button";
 import { useDispatch, useSelector } from "react-redux";
 import { getRoomPlayers, getRoomSetupCountdown, getRoomState } from "../../../../services/room/selectors";
 import { getUsername, getPlayer } from "../../../../services/user/selectors";
-import { sendSelectedTeam } from "../../../../services/user/actions";
+import { sendSelectedTeam, sendVoteRandomTeams } from "../../../../services/user/actions";
 
 const Constants = require('../../../../../../shared/constants');
 
@@ -31,6 +32,10 @@ export const TeamPanel = () => {
         player.status !== Constants.PLAYER_STATUS.PLAYER_DISCONNECTED
         && player.currentTeam.length === 0);
 
+    const numPlayersVotingRandom = players.reduce((count, player) =>
+        count += (player.votes.randomizedTeams
+            && player.status === Constants.PLAYER_STATUS.PLAYER_CONNECTED ? 1 : 0), 0);
+
     const handleTeamClick = (team) => {
         if (clickable && ownPlayer.currentTeam !== team) {
             dispatch(sendSelectedTeam(team));
@@ -50,6 +55,10 @@ export const TeamPanel = () => {
                         : 'Starting in ' + setupCountdown + '...'}
                 </span>
                 <span className="text-md text-gray-500">Teams have to be balanced to start the game!</span>
+                {numPlayersVotingRandom ?
+                    <span className="text-md text-gray-500">
+                        {numPlayersVotingRandom} out of 4 players {numPlayersVotingRandom > 1 ? 'have' : 'has'} voted for random teams!
+                    </span> : null}
             </div>
             <div className="grid grid-cols-2 mx-auto">
                 {[Constants.TEAM_TYPE.TEAM_A, Constants.TEAM_TYPE.TEAM_B].map((team) => {
@@ -74,7 +83,7 @@ export const TeamPanel = () => {
                             <div className="flex flex-col my-auto px-4">
                                 {teamPlayers.map(player =>
                                     <div key={player.username} className={`text-center m-2 truncate ${username === player.username ? 'font-bold' : ''}`}>
-                                        {player.username}
+                                        {player.username} {player.votes.randomizedTeams ? '(R)' : ''}
                                     </div>)
                                 }
                             </div>
@@ -89,11 +98,16 @@ export const TeamPanel = () => {
                     <div className="flex flex-col my-auto px-4">
                         {noTeamPlayers.map(player =>
                             <div key={player.username} className={`text-center m-2 truncate ${username === player.username ? 'font-bold' : ''}`}>
-                                {player.username}
+                                {player.username} {player.votes.randomizedTeams ? '(R)' : ''}
                             </div>
                         )}
                     </div>
                 </div>
+
+                {!ownPlayer.votes.randomizedTeams ?
+                    <div className="col-span-2">
+                        <Button value="VOTE RANDOM TEAMS" onClick={() => dispatch(sendVoteRandomTeams())} />
+                    </div> : null}
             </div>
         </div>
     );

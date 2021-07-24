@@ -18,6 +18,7 @@ class Events {
                 numFaceDown: player.numFaceDown,
                 collectedCards: player.collectedCards,
                 points: player.points,
+                votes: player.votes,
             }
         });
         let roomDestination = player ? player.socket.id : this.room.roomName;
@@ -63,6 +64,11 @@ class Events {
 
     updateDisplayStatus(response, player) {
         this.room.io.in(player.socket.id).emit(Constants.EVENT_TYPE.UPDATE_DISPLAY_STATUS, response);
+    }
+
+    sendNotification(message, player = null) {
+        let roomDestination = player ? player.socket.id : this.room.roomName;
+        this.room.io.in(roomDestination).emit(Constants.EVENT_TYPE.NOTIFICATION, message);
     }
 }
 

@@ -5,7 +5,8 @@ const initialState = {
     username: null,
     currentCards: [],
     hasConfirmedHand: null,
-    confirmedStartRound: null
+    confirmedStartRound: null,
+    latestNotificationMsg: ''
 };
 
 function userReducer(state = initialState, action) {
@@ -19,6 +20,11 @@ function userReducer(state = initialState, action) {
             return {
                 ...state,
                 currentCards: action.payload
+            }
+        case Constants.EVENT_TYPE.NOTIFICATION:
+            return {
+                ...state,
+                latestNotificationMsg: action.payload
             }
         case Constants.EVENT_TYPE.ASK_CONFIRM_HAND:
             return {

@@ -30,13 +30,13 @@ module.exports = function (rooms, socket, socketInfo, io) {
             socket.join(socketInfo.currentPlayerRoomName);
 
             // At this point, the room is not full, and there is no connected player with same username
-            if (currentPlayerRoom.currentState === Constants.ROOM_STATES.ROOM_PENDING
-                || currentPlayerRoom.currentState === Constants.ROOM_STATES.ROOM_SETUP) {
+            if (currentPlayerRoom.currentState === Constants.ROOM_STATES.ROOM_PENDING) {
                 currentPlayerRoom.addPlayer(socket, socketInfo.currentPlayerUsername);
             }
             else {
                 // Bring player to rejoin panel
                 currentPlayerRoom.Events.updatePlayerList();
+                currentPlayerRoom.Events.updateRoomState({ socket });
                 callback({
                     status: false,
                     message: Constants.ROOM_JOIN_FAILURE_MSG_TYPE.REJOIN_PENDING
