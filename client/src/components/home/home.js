@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { RESET_STORE } from '../../services/constants';
 import { useHistory } from 'react-router-dom';
 import HomeScreen from './homeScreen';
 
@@ -11,6 +13,8 @@ const verifyInput = (input) => {
 }
 
 export const Home = () => {
+    const dispatch = useDispatch();
+
     const [showRules, setShowRules] = useState(false);
     const [username, setUsername] = useState("");
     const [usernameInvalid, setUsernameInvalid] = useState(false);
@@ -33,6 +37,10 @@ export const Home = () => {
         }
         history.push("/games/" + room, { username });
     }
+
+    useEffect(() => {
+        dispatch({ type: RESET_STORE });
+    }, []);
 
     return (
         <HomeScreen {...{ showRules, toggleRules, handleSubmit, username, setUsername, usernameInvalid, room, setRoom, roomInvalid }} />
