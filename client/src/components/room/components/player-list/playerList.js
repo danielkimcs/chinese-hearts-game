@@ -9,7 +9,7 @@ import ActionButtons from './components/action-buttons';
 import { useDispatch, useSelector } from 'react-redux';
 import { getUsername, getCurrentCards, getConfirmedHandStatus, getStartRoundStatus } from '../../../../services/user/selectors';
 import { sendPlayedCard, setHandConfirmation, sendHandConfirmation, setStartRoundConfirmation, sendNewRoundConfirmation } from '../../../../services/user/actions';
-import { getRoomPlayers, getRoomCurrentTrick, getRoomPaused } from '../../../../services/room/selectors';
+import { getRoomPlayers, getRoomCurrentTrick, getRoomPaused, getRoomWinner } from '../../../../services/room/selectors';
 
 const Constants = require('../../../../../../shared/constants');
 
@@ -24,6 +24,7 @@ export const PlayerList = ({ roomState }) => {
     const pause = useSelector(getRoomPaused);
     const hasConfirmedHand = useSelector(getConfirmedHandStatus);
     const confirmedStartRound = useSelector(getStartRoundStatus);
+    const isThereWinner = useSelector(getRoomWinner) !== null;
 
     const isLegalMoveWrapper = (playedCard) => {
         if (playedCard == null) return false;
@@ -77,7 +78,7 @@ export const PlayerList = ({ roomState }) => {
                         : null}
 
                     {confirmedStartRound === false ?
-                        <Button onClick={handleConfirmStartRound} value="START NEW ROUND?" />
+                        <Button onClick={handleConfirmStartRound} value={`${isThereWinner ? 'RETURN TO TEAM SELECTION' : 'START NEW ROUND?'}`} />
                         : null}
                 </ActionButtons>
             </div>

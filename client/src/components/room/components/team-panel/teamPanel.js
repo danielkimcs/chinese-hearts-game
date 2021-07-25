@@ -50,9 +50,8 @@ export const TeamPanel = () => {
         <div className="container">
             <div className="text-center w-full pt-3 flex flex-col">
                 <span className="text-lg font-bold">
-                    {setupCountdown === null ?
-                        (roomState === Constants.ROOM_STATES.ROOM_SETUP_COUNTDOWN ? 'Starting the game with these teams...' : 'Choose a team!')
-                        : 'Starting in ' + setupCountdown + '...'}
+                    {roomState !== Constants.ROOM_STATES.ROOM_SETUP_COUNTDOWN ? 'Choose a team!'
+                        : (setupCountdown ? 'Starting in ' + setupCountdown + '...' : 'Starting the game with these teams...')}
                 </span>
                 <span className="text-md text-gray-500">Teams have to be balanced to start the game!</span>
                 {numPlayersVotingRandom ?

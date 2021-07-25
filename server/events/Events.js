@@ -47,6 +47,10 @@ class Events {
         this.room.io.in(player.socket.id).emit(Constants.EVENT_TYPE.UPDATE_PLAYER_CARDS, player.currentHand);
     }
 
+    announceWinningTeam(winner) {
+        this.room.io.in(this.room.roomName).emit(Constants.EVENT_TYPE.ANNOUNCE_WINNER, winner);
+    }
+
     pauseGame(paused, player = null) {
         let roomDestination = player ? player.socket.id : this.room.roomName;
         this.room.io.in(roomDestination).emit(Constants.EVENT_TYPE.GAME_PAUSE, paused);
