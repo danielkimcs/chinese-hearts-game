@@ -1,5 +1,7 @@
 # Chinese Hearts Web Game
 
+The `master` branch deploys to Heroku at https://chinesehearts.herokuapp.com/.
+
 Versions:
 * `npm` - 6.14.10
 * `node` - v14.15.4

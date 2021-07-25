@@ -9,7 +9,8 @@ const initialState = {
     startingCountdown: null,
     setupCountdown: null,
     pause: false,
-    currentTrick: null
+    currentTrick: null,
+    winningTeam: null,
 };
 
 function roomReducer(state = initialState, action) {
@@ -48,6 +49,11 @@ function roomReducer(state = initialState, action) {
             return {
                 ...state,
                 currentTrick: action.payload
+            }
+        case Constants.EVENT_TYPE.ANNOUNCE_WINNER:
+            return {
+                ...state,
+                winningTeam: action.payload
             }
         default:
             return state

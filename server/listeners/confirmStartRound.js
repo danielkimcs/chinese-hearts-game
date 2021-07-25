@@ -18,7 +18,11 @@ module.exports = function (rooms, socket, socketInfo) {
             .reduce((confirmedSoFar, nextPlayer) => confirmedSoFar && nextPlayer.hasConfirmedStartRound, true);
 
         if (everyoneHasConfirmed) {
-            room.startState(Constants.ROOM_STATES.ROUND_DEAL);
+            if (room.reset) {
+                room.startState(Constants.ROOM_STATES.ROOM_SETUP);
+            } else {
+                room.startState(Constants.ROOM_STATES.ROUND_DEAL);
+            }
         }
     });
 }

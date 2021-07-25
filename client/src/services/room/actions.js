@@ -70,3 +70,10 @@ export const setCurrentTrick = (currentTrick) => (
         payload: currentTrick
     }
 );
+
+export const setWinningTeam = (winner) => (
+    {
+        type: Constants.EVENT_TYPE.ANNOUNCE_WINNER,
+        payload: winner
+    }
+);

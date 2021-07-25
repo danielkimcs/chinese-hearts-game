@@ -5,7 +5,8 @@ import {
     setGamePause,
     setRoomState,
     setCurrentTrick,
-    setDisplayStatus
+    setDisplayStatus,
+    setWinningTeam
 } from './room/actions';
 import {
     setPlayerCards,
@@ -60,6 +61,10 @@ const addListeners = (dispatch, socket) => {
 
     socket.on(Constants.EVENT_TYPE.NOTIFICATION, (message) => {
         dispatch(setNotification(message));
+    });
+
+    socket.on(Constants.EVENT_TYPE.ANNOUNCE_WINNER, (winner) => {
+        dispatch(setWinningTeam(winner));
     });
 }
 

@@ -11,3 +11,5 @@ export const getRoomSetupCountdown = store => store.room.setupCountdown;
 export const getRoomPaused = store => store.room.pause;
 
 export const getRoomCurrentTrick = store => store.room.currentTrick;
+
+export const getRoomWinner = store => store.room.winningTeam;

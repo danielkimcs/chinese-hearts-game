@@ -7,6 +7,7 @@ const Events = require('../events/Events');
 
 const COUNTDOWN_INTERVAL_TIME = 1000;
 const ROUND_END_DELAY = 3500;
+const LOSING_POINTS_CUTOFF = -1000;
 const DEVELOPMENT_MODE = false;
 
 const SUITS = Object.keys(Constants.CARD_TYPE.SUITS);
@@ -28,11 +29,11 @@ class Room {
         this.players = {};
         this.teams = {
             [Constants.TEAM_TYPE.TEAM_A]: {
-                points: 0,
+                // points: 0,
                 members: []
             },
             [Constants.TEAM_TYPE.TEAM_B]: {
-                points: 0,
+                // points: 0,
                 members: []
             }
         };
@@ -46,6 +47,7 @@ class Room {
         this.trickWinnerPlayer = undefined;
         this.trickEndTimeoutStarted = false;
         this.doubleHeartPoints = false;
+        this.reset = false;
 
         this.Events = new Events(this);
 
@@ -109,6 +111,13 @@ class Room {
     }
 
     roomSetup() {
+        if (this.reset) {
+            this.reset = false;
+            this.resetTeams();
+            this.Events.announceWinningTeam(null);
+            this.queenSpadeRecipient = undefined;
+        }
+
         if (this.countdownInterval) {
             clearInterval(this.countdownInterval);
             this.countdownInterval = undefined;
@@ -153,8 +162,6 @@ class Room {
             this.Events.updatePlayerCards(player);
         });
 
-        this.Events.sendNotification("Cards have been randomly dealt!");
-
         this.startState(Constants.ROOM_STATES.ROUND_CONFIRM);
     }
 
@@ -171,6 +178,7 @@ class Room {
         if (this.queenSpadeRecipient) {
             this.Events.sendNotification(`${this.queenSpadeRecipient.username} collected the Queen of Spades last round, so ${this.queenSpadeRecipient.username} will start this round!`);
             this.currentTrick = new Trick(this.queenSpadeRecipient.playerId);
+            this.queenSpadeRecipient = undefined;
         } else if (!this.currentTrick) {
             const randomFirstPlayer = Utility.chooseRandom(this.getConnectedPlayers());
             const randomFirstPlayerId = randomFirstPlayer.playerId;
@@ -240,6 +248,12 @@ class Room {
         });
         this.doubleHeartPoints = false;
         this.Events.updatePlayerList();
+
+        let winner = this.determineWinner();
+        if (winner) {
+            this.reset = true;
+            this.Events.announceWinningTeam(winner);
+        }
 
         Object.keys(this.players).forEach(playerUsername => {
             let player = this.players[playerUsername];
@@ -372,6 +386,15 @@ class Room {
         }
     }
 
+    determineWinner() {
+        let teamAPoints = this.teams[Constants.TEAM_TYPE.TEAM_A].members.reduce((total, currentPlayer) => total += currentPlayer.points, 0);
+        let teamBPoints = this.teams[Constants.TEAM_TYPE.TEAM_B].members.reduce((total, currentPlayer) => total += currentPlayer.points, 0);
+        if (teamAPoints > LOSING_POINTS_CUTOFF && teamBPoints > LOSING_POINTS_CUTOFF) {
+            return null;
+        }
+        return (teamAPoints > teamBPoints ? Constants.TEAM_TYPE.TEAM_A : (teamAPoints < teamBPoints ? Constants.TEAM_TYPE.TEAM_B : "tie"));
+    }
+
     determinePlayerOrder() {
         if (Constants.REQUIRED_NUM_PLAYERS === 4) {
             // Player order: 0 (Team A) -> 1 (Team B) -> 2 (Team A) -> 3 (Team B)
@@ -389,6 +412,17 @@ class Room {
                 shuffledPlayerList[playerIndex].nextPlayer = shuffledPlayerList[(playerIndex + 1) % 4];
             }
         }
+    }
+
+    resetTeams() {
+        Object.keys(Constants.TEAM_TYPE).forEach(team => {
+            this.teams[team].members.forEach(player => {
+                player.points = 0;
+                player.currentTeam = "";
+                player.nextPlayer = undefined;
+            });
+            this.teams[team].members = [];
+        });
     }
 
     beginCountdown(timeLengthInSeconds, eventType, nextState, changePlayerOrder = false) {

@@ -7,6 +7,9 @@ import ReactGA from 'react-ga';
 ReactGA.initialize('UA-88938949-4');
 
 function App() {
+  useEffect(() => {
+    ReactGA.pageview(window.location.pathname + window.location.search);
+  });
   return (
     <Router>
       <div className="main-div">

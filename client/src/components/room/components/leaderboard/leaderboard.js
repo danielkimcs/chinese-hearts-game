@@ -1,18 +1,20 @@
 import React from "react";
 import { useSelector } from "react-redux";
 import { getUsername } from "../../../../services/user/selectors";
-import { getRoomPlayers } from "../../../../services/room/selectors";
+import { getRoomPlayers, getRoomWinner } from "../../../../services/room/selectors";
 const Constants = require('../../../../../../shared/constants');
 
 const teamLeaderboardSettings = {
     [Constants.TEAM_TYPE.TEAM_A]: { darkColor: "bg-red-200", lightColor: "bg-red-100", name: "Team A" },
     [Constants.TEAM_TYPE.TEAM_B]: { darkColor: "bg-blue-200", lightColor: "bg-blue-100", name: "Team B" },
+    winningColors: { darkColor: "bg-yellow-200", lightColor: "bg-yellow-100" },
     disconnectedColor: "bg-gray-100"
 }
 
 export const Leaderboard = () => {
     const myUsername = useSelector(getUsername);
     const players = useSelector(getRoomPlayers);
+    const winner = useSelector(getRoomWinner);
 
     if (!players || !(players.length === 4)) return null;
     return (
@@ -27,15 +29,17 @@ export const Leaderboard = () => {
                     {[Constants.TEAM_TYPE.TEAM_A, Constants.TEAM_TYPE.TEAM_B].map((team) => {
                         let teamPlayers = players.filter(player => player.currentTeam === team);
                         if (!teamPlayers.length) return null;
+                        const darkColor = team === winner ? teamLeaderboardSettings.winningColors.darkColor : teamLeaderboardSettings[team].darkColor;
+                        const lightColor = team === winner ? teamLeaderboardSettings.winningColors.lightColor : teamLeaderboardSettings[team].lightColor;
                         return (
                             <React.Fragment key={team}>
-                                <tr className={`${teamLeaderboardSettings[team].darkColor} border-b border-gray-200`}>
+                                <tr className={`${darkColor} border-b border-gray-200`}>
                                     <td className="truncate px-3">{teamLeaderboardSettings[team].name}</td>
                                     <td className="">{teamPlayers.reduce((totalPoints, currentTeamPlayer) => totalPoints + currentTeamPlayer.points, 0)}</td>
                                 </tr>
                                 {teamPlayers.map(currentTeamPlayer =>
                                     <tr key={currentTeamPlayer.username} className={`${currentTeamPlayer.status === Constants.PLAYER_STATUS.PLAYER_DISCONNECTED ?
-                                        teamLeaderboardSettings.disconnectedColor : teamLeaderboardSettings[team].lightColor} border-b border-gray-200`}>
+                                        teamLeaderboardSettings.disconnectedColor : lightColor} border-b border-gray-200`}>
                                         <td className={`truncate px-12 ${myUsername === currentTeamPlayer.username ? 'font-bold' : ''}`}>{currentTeamPlayer.username}</td>
                                         <td className="">{currentTeamPlayer.points}</td>
                                     </tr>
