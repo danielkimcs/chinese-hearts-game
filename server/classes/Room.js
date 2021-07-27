@@ -47,6 +47,7 @@ class Room {
         this.trickWinnerPlayer = undefined;
         this.trickEndTimeoutStarted = false;
         this.doubleHeartPoints = false;
+        this.instantWinner = undefined;
         this.reset = false;
 
         this.Events = new Events(this);
@@ -236,7 +237,13 @@ class Room {
         this.Events.updateCurrentTrick(); // clears the table from last trick
         this.getConnectedPlayers().forEach(player => {
             if (player.pointsOutdated) {
-                player.points += player.calculatePoints(this.doubleHeartPoints);
+                let currentPts = player.calculatePoints(this.doubleHeartPoints);
+                if (currentPts !== Constants.COLLECTED_ALL_CARDS) {
+                    player.points += currentPts;
+                } else {
+                    player.points = Constants.COLLECTED_ALL_CARDS;
+                    this.instantWinner = player.currentTeam;
+                }
 
                 // Reset everything
                 player.hasConfirmedHand = false;
@@ -249,8 +256,9 @@ class Room {
         this.doubleHeartPoints = false;
         this.Events.updatePlayerList();
 
-        let winner = this.determineWinner();
+        let winner = this.instantWinner !== undefined ? this.instantWinner : this.determineWinner();
         if (winner) {
+            this.instantWinner = undefined;
             this.reset = true;
             this.Events.announceWinningTeam(winner);
         }

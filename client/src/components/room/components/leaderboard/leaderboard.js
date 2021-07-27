@@ -27,7 +27,8 @@ export const Leaderboard = () => {
                     </tr></thead>
                 <tbody>
                     {[Constants.TEAM_TYPE.TEAM_A, Constants.TEAM_TYPE.TEAM_B].map((team) => {
-                        let teamPlayers = players.filter(player => player.currentTeam === team);
+                        const teamPlayers = players.filter(player => player.currentTeam === team);
+                        const isThereInstantWinner = teamPlayers.filter(player => player.points === Constants.COLLECTED_ALL_CARDS).length > 0;
                         if (!teamPlayers.length) return null;
                         const darkColor = team === winner ? teamLeaderboardSettings.winningColors.darkColor : teamLeaderboardSettings[team].darkColor;
                         const lightColor = team === winner ? teamLeaderboardSettings.winningColors.lightColor : teamLeaderboardSettings[team].lightColor;
@@ -35,13 +36,15 @@ export const Leaderboard = () => {
                             <React.Fragment key={team}>
                                 <tr className={`${darkColor} border-b border-gray-200`}>
                                     <td className="truncate px-3">{teamLeaderboardSettings[team].name}</td>
-                                    <td className="">{teamPlayers.reduce((totalPoints, currentTeamPlayer) => totalPoints + currentTeamPlayer.points, 0)}</td>
+                                    <td className="">{!isThereInstantWinner ?
+                                        teamPlayers.reduce((totalPoints, currentTeamPlayer) => totalPoints + currentTeamPlayer.points, 0)
+                                        : "INSTANT WIN!"}</td>
                                 </tr>
                                 {teamPlayers.map(currentTeamPlayer =>
                                     <tr key={currentTeamPlayer.username} className={`${currentTeamPlayer.status === Constants.PLAYER_STATUS.PLAYER_DISCONNECTED ?
                                         teamLeaderboardSettings.disconnectedColor : lightColor} border-b border-gray-200`}>
                                         <td className={`truncate px-12 ${myUsername === currentTeamPlayer.username ? 'font-bold' : ''}`}>{currentTeamPlayer.username}</td>
-                                        <td className="">{currentTeamPlayer.points}</td>
+                                        <td className="">{isThereInstantWinner ? '' : currentTeamPlayer.points}</td>
                                     </tr>
                                 )}
                             </React.Fragment>

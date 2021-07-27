@@ -44,9 +44,9 @@ class Player {
 
     calculatePoints(doubleHearts) {
         if (!this.collectedCards.length) return 0;
-        // if (this.collectedCards.length === 16) {
-        //     return Constants.COLLECTED_ALL_CARDS;
-        // }
+        if (this.collectedCards.length === 16) {
+            return Constants.COLLECTED_ALL_CARDS;
+        }
         if (this.collectedCards.length === 1
             && this.collectedCards[0].rank === '10'
             && this.collectedCards[0].suit === 'CLUB') {
