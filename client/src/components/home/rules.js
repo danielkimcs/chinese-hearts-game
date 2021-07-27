@@ -140,6 +140,9 @@ const Rules = ({ toggleRules }) => {
 
                     <p>Each team's points are calculated by adding the players' points together. Except the first round, the player who collected Q&spades;
                         must begin the first trick of the next round. </p>
+
+                    <p>The game ends when one team has a total of -1000 cumulative points, in which case the other team wins. An alternate but rare winning scenario is that a player manages to collect
+                        all 16 special cards, in which case their team instantly wins. </p>
                 </article>
             </div>
         </div>
