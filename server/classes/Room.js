@@ -52,8 +52,6 @@ class Room {
 
         this.Events = new Events(this);
 
-        this.stateActions = undefined;
-
         this.stateActions = {
             [Constants.ROOM_STATES.ROOM_PAUSE]: this.roomPause,
             [Constants.ROOM_STATES.ROOM_PENDING]: this.roomPending,
