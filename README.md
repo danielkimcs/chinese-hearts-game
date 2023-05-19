@@ -1,5 +1,7 @@
 # Chinese Hearts Web Game
 
+Deployed on https://chinese-hearts.up.railway.app/.
+
 Versions:
 * `npm` - 6.14.10
 * `node` - v14.15.4
